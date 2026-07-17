@@ -55,6 +55,7 @@ class IiwaArm:
 
     def reset(self):
         self.robot.reset()
+        self.contact.reset()   # IiwaArm owns both; clear stale contact-force history too
 
     # --- ArmInterface ---
     def get_joint_velocities(self):

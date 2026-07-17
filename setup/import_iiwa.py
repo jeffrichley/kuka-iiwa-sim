@@ -44,9 +44,17 @@ def main():
         usd_dir=usd_dir,
         usd_file_name=usd_name,
         fix_base=True,                 # iiwa is a fixed-base arm
-        merge_fixed_joints=True,
+        merge_fixed_joints=True,       # folds the empty lbr_link_ee tool frame away
         collider_type="convex_hull",
         self_collision=False,
+        # gains.stiffness has no default (MISSING) and must be set to pass validation.
+        # These position-drive gains are NOT load-bearing: at runtime IiwaArm's
+        # ImplicitActuatorCfg(stiffness=0, damping=0) overrides them for torque control.
+        # They only keep the standalone USD usable under position control.
+        joint_drive=UrdfConverterCfg.JointDriveCfg(
+            target_type="position",
+            gains=UrdfConverterCfg.JointDriveCfg.PDGainsCfg(stiffness=400.0, damping=40.0),
+        ),
     )
     converter = UrdfConverter(cfg)
     print(f"[OK] wrote USD: {converter.usd_path}")

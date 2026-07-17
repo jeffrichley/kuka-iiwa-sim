@@ -5,8 +5,9 @@ Run on the Isaac machine after setup/install.ps1:
 """
 import os
 
-# Path relative to repo root — adjust to the actual file inside the cloned description.
-URDF_REL = "assets/urdf/iiwa7_r800.urdf"
+# Path relative to repo root. The plain URDF is produced by setup/expand_xacro.py
+# and lives at the description package root so its relative `meshes/...` refs resolve.
+URDF_REL = "assets/urdf/lbr_iiwa7_r800_description/iiwa7_r800.urdf"
 USD_DIR_REL = "assets/usd"
 USD_NAME = "iiwa7_r800.usd"
 
@@ -23,7 +24,8 @@ def main():
     urdf, usd_dir, usd_name = resolve_paths(repo_root)
     if not os.path.exists(urdf):
         raise FileNotFoundError(
-            f"URDF not found at {urdf}. See docs/assets.md to fetch the description.")
+            f"URDF not found at {urdf}. Run setup/expand_xacro.py first "
+            f"(see docs/assets.md to fetch the description).")
     os.makedirs(usd_dir, exist_ok=True)
 
     # Isaac imports must follow the app launch.

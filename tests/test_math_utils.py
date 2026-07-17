@@ -44,3 +44,13 @@ def test_orientation_error_takes_short_way_past_180deg():
     q_cur = np.array([1.0, 0.0, 0.0, 0.0])
     err = orientation_error(q_des, q_cur)
     assert np.allclose(err, [0.0, 0.0, -np.pi / 2], atol=1e-6)
+
+def test_quat_mul_dense_all_cross_terms():
+    a = np.array([1.0, 2.0, 3.0, 4.0])
+    b = np.array([5.0, 6.0, 7.0, 8.0])
+    # wxyz Hamilton product, computed by hand:
+    #   w = 1*5 - 2*6 - 3*7 - 4*8 = -60
+    #   x = 1*6 + 2*5 + 3*8 - 4*7 =  12
+    #   y = 1*7 - 2*8 + 3*5 + 4*6 =  30
+    #   z = 1*8 + 2*7 - 3*6 + 4*5 =  24
+    assert np.allclose(quat_mul(a, b), [-60.0, 12.0, 30.0, 24.0])

@@ -28,6 +28,11 @@ def main():
             f"(see docs/assets.md to fetch the description).")
     os.makedirs(usd_dir, exist_ok=True)
 
+    # Accept NVIDIA Omniverse EULA (declining telemetry) non-interactively.
+    # setdefault so an explicit environment override always wins.
+    os.environ.setdefault("OMNI_KIT_ACCEPT_EULA", "YES")
+    os.environ.setdefault("PRIVACY_CONSENT", "N")
+
     # Isaac imports must follow the app launch.
     from isaaclab.app import AppLauncher
     launcher = AppLauncher(headless=True)

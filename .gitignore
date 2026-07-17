@@ -1,0 +1,28 @@
+# --- Isaac Sim / generated artifacts (never commit these) ---
+assets/usd/            # generated from URDF by setup/import_iiwa.py
+out/                   # rendered videos and frame captures
+*.mp4
+*.usd
+*.usdc
+*.usda
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+env_isaaclab/
+build/
+dist/
+
+# --- Isaac Sim caches (in case anyone points them here) ---
+.cache/
+kit/
+logs/
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store

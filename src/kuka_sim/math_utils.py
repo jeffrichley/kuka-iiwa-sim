@@ -19,7 +19,7 @@ def quat_mul(a, b):
 
 
 def orientation_error(q_des, q_cur):
-    """Axis-angle (3,) rotation taking q_cur -> q_des, in the current frame."""
+    """Axis-angle (3,) rotation error (base/world frame) taking q_cur -> q_des."""
     q_err = quat_mul(np.asarray(q_des, float), quat_conj(q_cur))
     if q_err[0] < 0.0:                    # shortest path
         q_err = -q_err

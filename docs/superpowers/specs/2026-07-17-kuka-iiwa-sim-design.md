@@ -101,7 +101,10 @@ arm.get_joint_positions()        # -> np.ndarray(7)  angles (rad)
 arm.get_joint_velocities()       # -> np.ndarray(7)
 arm.set_joint_efforts(tau)       # 7 joint torques (N·m) — effort control
 arm.get_ee_pose()                # -> (pos, quat) flange forward kinematics
-arm.get_ee_wrench()              # -> (force[3], torque[3]) measured EE contact wrench
+arm.get_ee_force()               # -> force[3] measured EE contact force (world frame)
+                                 #    NOTE: Isaac ContactSensor gives 3-DOF force only,
+                                 #    not a 6-DOF wrench. Sufficient for normal-force
+                                 #    regulation; contact torque is not available.
 arm.get_jacobian()               # -> 6x7 EE Jacobian (for the controller)
 arm.step(); arm.reset()
 ```

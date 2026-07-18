@@ -14,7 +14,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=7.4"]
 docs = ["mkdocs-material>=9.5"]
-dance = ["librosa>=0.10"]
+dance = ["librosa>=0.10", "mediapipe>=0.10", "imageio>=2.31"]
 
 [build-system]
 requires = ["setuptools>=68"]

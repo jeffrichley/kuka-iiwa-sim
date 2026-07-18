@@ -3,8 +3,8 @@
 Copy this file and put your logic in `experiment_step`. You command the arm's
 Cartesian pose via impedance control and read back the contact force — the same
 shape of control you'd use on the real iiwa. Pressing a calibrated depth into the
-compliant surface sets the contact force (see scripts/force_demo.py for the
-depth -> force calibration: x=0.565 -> ~10 N, deeper -> more).
+workpiece sets the contact force (see scripts/force_demo.py for the depth -> force
+calibration: x=0.42 -> ~30 N, deeper -> more).
 
 Run:  python experiments/bhodi_template.py
 """

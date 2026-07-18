@@ -93,9 +93,11 @@ class IiwaArm:
 
     def get_ee_force(self):
         """Contact force (N, world frame) on the flange, smoothed over the sensor
-        history. Mirrors NVIDIA's OSC tutorial: mean over history, max over bodies."""
+        history: mean over history, then the force vector of the strongest-contact
+        body (by magnitude). For a single tracked body this is just its force."""
         import torch
         hist = self.contact.data.net_forces_w_history      # (1, T, B, 3)
         mean_over_time = torch.mean(hist, dim=1)            # (1, B, 3)
-        f, _ = torch.max(mean_over_time, dim=1)            # (1, 3) strongest-contact body
-        return f[0].detach().cpu().numpy()
+        mags = torch.linalg.norm(mean_over_time, dim=-1)   # (1, B)
+        b = int(torch.argmax(mags[0]))                     # strongest-contact body
+        return mean_over_time[0, b].detach().cpu().numpy()  # (3,)

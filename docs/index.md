@@ -12,8 +12,8 @@ tunable contact force** — the core of a contact / force-regulation experiment.
     - The iiwa 7 R800 loads from its real URDF and holds itself under gravity
       (torque control, 0.0 rad drift).
     - A Cartesian impedance controller drives the flange to a pose (free space).
-    - The arm presses a compliant panel and **holds ~10 N steady** (tunable by
-      press depth).
+    - The arm presses a workpiece with a flange probe and **holds ~30 N steady**
+      (tunable by press depth).
     - The whole run renders to an MP4 with a force-vs-time plot.
 
 ## Quick map

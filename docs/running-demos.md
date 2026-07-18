@@ -48,7 +48,8 @@ python scripts/record_demo.py
 ```
 
 Both land in `out/` (git-ignored). Adjust the camera in `record_demo.py`
-(`SceneCamera(pos=..., target=...)`).
+(`SceneCamera(pos=..., target=...)`). A recording of this demo is on the
+[Home page](index.md#see-it-run) ([YouTube](https://youtu.be/DEJWunnK_Vg)).
 
 !!! tip "Clean exits"
     The demos call `os._exit(0)` after `app.close()` — Isaac leaves non-daemon

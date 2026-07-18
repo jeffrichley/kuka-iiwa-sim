@@ -8,6 +8,21 @@ is unavailable.
 The arm reaches forward, presses a compliant surface, and **holds a steady,
 tunable contact force** — the core of a contact / force-regulation experiment.
 
+## See it run
+
+The arm aims a flange probe at a workpiece and holds a steady contact force:
+
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; border-radius: 8px;">
+  <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+    src="https://www.youtube.com/embed/DEJWunnK_Vg"
+    title="KUKA LBR iiwa 7 R800 — simulated force control in Isaac Sim"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen></iframe>
+</div>
+
+Reproduce it with `python scripts/record_demo.py` (see [Run the demos](running-demos.md)).
+
 !!! success "What works today"
     - The iiwa 7 R800 loads from its real URDF and holds itself under gravity
       (torque control, 0.0 rad drift).

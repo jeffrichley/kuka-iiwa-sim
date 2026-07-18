@@ -1,6 +1,10 @@
-# --- Isaac Sim / generated artifacts (never commit these) ---
-assets/usd/            # generated from URDF by setup/import_iiwa.py
-out/                   # rendered videos and frame captures
+# --- Isaac Sim / generated + fetched artifacts (never commit these) ---
+# assets/urdf: fetched description + expand_xacro.py output (see docs/assets.md)
+# assets/usd: generated from URDF by setup/import_iiwa.py
+# out: rendered videos and frame captures
+assets/urdf/
+assets/usd/
+out/
 *.mp4
 *.usd
 *.usdc
@@ -12,8 +16,11 @@ __pycache__/
 *.egg-info/
 .venv/
 env_isaaclab/
+.xacro_venv/
 build/
 dist/
+# mkdocs build output
+site/
 
 # --- Isaac Sim caches (in case anyone points them here) ---
 .cache/

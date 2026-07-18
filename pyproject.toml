@@ -1,0 +1,27 @@
+[project]
+name = "kuka_sim"
+version = "0.1.0"
+description = "Simulated KUKA LBR iiwa 7 R800 (Isaac Sim) with Cartesian force control"
+requires-python = "==3.11.*"
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "imageio>=2.31",
+    "imageio-ffmpeg>=0.4.9",
+]
+# NOTE: isaacsim / isaaclab are installed separately by setup/install.ps1 — never here.
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+docs = ["mkdocs-material>=9.5"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]

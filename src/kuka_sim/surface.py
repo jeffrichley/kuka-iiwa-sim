@@ -1,7 +1,13 @@
 """A fixed, compliant contact surface (a soft 'table' the tool presses on)."""
 
-def make_surface(prim_path="/World/Surface", pos=(0.55, 0.0, 0.25),
-                 size=(0.4, 0.4, 0.04), stiffness=2000.0, damping=50.0):
+def make_surface(prim_path="/World/Surface", pos=(0.60, 0.0, 0.70),
+                 size=(0.05, 0.45, 0.55), stiffness=2000.0, damping=50.0):
+    # A VERTICAL panel (thin in x); near face at x ~ 0.575, spanning z ~0.42-0.98.
+    # The arm reaches forward and presses HORIZONTALLY (+x) into the face at its
+    # natural forward-reach height (flange ~z=0.8), using the strong proximal
+    # joints. Pressing a low table instead forces the arm to its reach limit where
+    # the weak 40 N·m wrist joints saturate and it can't modulate a light force.
+    # compliant_contact_stiffness makes the contact soft.
     import isaaclab.sim as sim_utils
     from isaaclab.assets import RigidObject, RigidObjectCfg
 

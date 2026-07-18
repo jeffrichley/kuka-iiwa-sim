@@ -15,6 +15,14 @@ pip install "isaacsim[all,extscache]==5.1.0" --extra-index-url https://pypi.nvid
 # Isaac Lab 2.3 (stable) as the robotics API layer.
 pip install "isaaclab[isaacsim,all]==2.3.2.post1" --extra-index-url https://pypi.nvidia.com
 
+# The Isaac install pulls the CPU-only torch wheel on Windows, which fails GPU
+# simulation with "Torch not compiled with CUDA enabled". Replace it with the
+# CUDA build (same pinned versions) so device="cuda" works on the RTX GPU.
+Write-Host "== Installing CUDA-enabled torch (cu128) =="
+pip install --force-reinstall --no-deps `
+    torch==2.7.0 torchvision==0.22.0 torchaudio==2.7.0 `
+    --index-url https://download.pytorch.org/whl/cu128
+
 Write-Host "== Installing project (editable) + dev deps =="
 pip install -e ".[dev]"
 

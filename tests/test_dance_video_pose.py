@@ -1,6 +1,6 @@
 import numpy as np
 from kuka_sim.dance.video import pose as P
-from kuka_sim.dance.video.pose import PoseTrack, _fill_gaps, estimate_poses
+from kuka_sim.dance.video.pose import PoseTrack, _fill_gaps, estimate_poses, load_pose_track
 
 
 def test_fill_gaps_interpolates_interior_nan():
@@ -28,3 +28,14 @@ def test_estimate_poses_assembles_track(monkeypatch):
     assert track.xy.shape == (5, 33, 2)
     assert track.fps == 30.0
     assert not np.isnan(track.xy).any()             # gap filled
+
+
+def test_load_pose_track_fills_gaps(tmp_path):
+    xy = np.full((4, 33, 2), 0.5); xy[1, 3] = [np.nan, np.nan]
+    npz = tmp_path / "poses.npz"
+    np.savez(npz, xy=xy, visible=np.ones((4, 33)), fps=24.0)
+    track = load_pose_track(str(npz))
+    assert isinstance(track, PoseTrack)
+    assert track.fps == 24.0
+    assert track.xy.shape == (4, 33, 2)
+    assert not np.isnan(track.xy).any()

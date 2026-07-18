@@ -35,3 +35,4 @@ logs/
 *.swp
 Thumbs.db
 .DS_Store
+.pose_venv/

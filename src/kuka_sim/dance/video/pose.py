@@ -64,3 +64,11 @@ def estimate_poses(video_path, max_frames=None):
     frames, fps = _read_frames(video_path, max_frames)
     xy, vis = _detect_landmarks(frames)
     return PoseTrack(xy=_fill_gaps(xy), visible=np.asarray(vis, float), fps=fps)
+
+
+def load_pose_track(npz_path):
+    """Load a PoseTrack from an .npz produced by scripts/extract_pose.py (which
+    runs in the isolated pose venv). Gaps are filled here on load."""
+    d = np.load(npz_path)
+    return PoseTrack(xy=_fill_gaps(d["xy"]), visible=np.asarray(d["visible"], float),
+                     fps=float(d["fps"]))

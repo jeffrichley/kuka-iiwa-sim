@@ -1,7 +1,7 @@
 """A fixed, compliant contact surface (a soft 'table' the tool presses on)."""
 
 def make_surface(prim_path="/World/Surface", pos=(0.72, 0.0, 0.62),
-                 size=(0.24, 0.40, 0.40), stiffness=400.0, damping=40.0):
+                 size=(0.24, 0.40, 0.40), stiffness=8000.0, damping=120.0):
     # A solid workpiece BLOCK in front of the arm; near face at x ~ 0.60,
     # mid-height. The arm reaches forward with a flange PROBE (see scene.py) and
     # presses the probe tip HORIZONTALLY (+x) into the face, using the strong

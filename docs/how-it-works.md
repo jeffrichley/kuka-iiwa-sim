@@ -63,9 +63,9 @@ stable, and the depth→force map is monotonic and calibratable:
 
 | press depth x | steady force |
 |---|---|
-| 0.42 | ~16 N |
-| 0.44 | ~20 N |
-| 0.46 | ~34 N |
+| 0.42 | ~30 N |
+| 0.44 | ~40 N |
+| 0.46 | ~53 N |
 
 ### Press with a tool tip, not the wrist
 
@@ -74,8 +74,15 @@ point. A **probe** is attached to the flange (`scene.py::_add_flange_probe`,
 spawned as a child of `lbr_link_7` so its contacts register on the flange
 sensor), and the flange is **aimed forward** (`+90°` about Y, so the flange +Z /
 tool axis points at the block) so the **tool tip** does the pressing — matching a
-real end-effector (probe / scalpel). A rigid point-tool can't hold much below
-~15 N (below that the tip loses contact); soften the block for a lighter press.
+real end-effector (probe / scalpel).
+
+### Penetration vs. force are coupled
+
+With a compliant block, penetration ≈ force / contact-stiffness — a *soft* block
+forces the tip to sink in deeply to build force (looks like it's going through).
+A *stiff* block (stiffness 8000 + matching damping) keeps the indent to a few mm
+so the tip presses **on** the face, and the force is rock-steady. Soften the
+block only if you want the tool to press **into** a malleable surface.
 
 ### A saturated axis drives slow instability
 

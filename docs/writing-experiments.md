@@ -17,9 +17,9 @@ read its state there:
 def experiment_step(i, arm, ctrl):
     if i == 0:
         # Aim the flange probe forward (+90 deg about Y) and press its tip into
-        # the workpiece block; the x press depth (0.44) sets the force (~20 N).
+        # the workpiece block; the x press depth (0.42) sets the force (~30 N).
         forward = np.array([0.7071, 0.0, 0.7071, 0.0])
-        ctrl.set_target_pose(np.array([0.44, 0.0, 0.62]), forward)
+        ctrl.set_target_pose(np.array([0.42, 0.0, 0.62]), forward)
 
     ctrl.apply()                       # (1) compute + send torques
 
@@ -34,7 +34,7 @@ never touch the sim loop.
 ## Common things you'll want
 
 **Hold a target contact force.** Set the press depth from the calibration
-(`x=0.44 → ~20 N`, deeper → more). To hold a *different* force, change the x in
+(`x=0.42 → ~30 N`, deeper → more). To hold a *different* force, change the x in
 `set_target_pose`, or re-run the sweep in `scripts/force_demo.py` for your block
 stiffness.
 

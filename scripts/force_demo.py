@@ -7,17 +7,18 @@ the strong proximal joints — pressing down at reach saturates the weak 40 N·m
 wrist. The flange is aimed forward so the tool tip (not the wrist) does the work.
 
 Force control is IMPEDANCE-BASED: the arm commands a fixed press depth into the
-compliant block; the steady force scales with depth. Calibrated by sweep (soft
-block, stiffness 400):
+block; the steady force scales with depth. The block is STIFF (stiffness 8000) so
+the probe tip presses ON the face with minimal indent (a soft block forces deep
+penetration to build force). Calibrated by sweep:
 
     press target x   steady |F|
-        0.42            ~16 N
-        0.44            ~17 N
-        0.46            ~34 N
+        0.42            ~30 N
+        0.44            ~40 N
+        0.46            ~53 N
 
-A rigid point-tool can't hold much below ~15 N (it loses contact), so the demo
-holds ~15 N. Change the force with `PRESS_TARGET_X` (and re-sweep if you change
-the block stiffness).
+Change the force with `PRESS_TARGET_X` (and re-sweep if you change the block
+stiffness). Softer blocks read as pressing INTO a malleable surface; stiffer
+blocks read as pressing ON a hard one.
 """
 import os
 import numpy as np
@@ -29,9 +30,9 @@ from kuka_sim.logging_utils import ForceLog
 USD = "assets/usd/iiwa7_r800.usd"
 # Aim the flange +Z (probe/tool axis) toward world +X (at the block): +90° about Y.
 FORWARD_QUAT = np.array([0.7071, 0.0, 0.7071, 0.0])
-PRESS_TARGET_X = 0.44           # press depth into the block (tune for force)
-PRESS_HEIGHT_Z = 0.62           # reachable mid-height (no axis saturation)
-NOMINAL_FORCE_N = 20.0          # holds ~20 N (settles from a contact transient)
+PRESS_TARGET_X = 0.42           # press depth into the (stiff) block; the tip
+PRESS_HEIGHT_Z = 0.62           # presses ON the face with minimal indent
+NOMINAL_FORCE_N = 30.0          # steady ~30 N (stiff block keeps the press shallow)
 
 
 def run(sim=None, app=None, handles=None, steps=2500, on_step=None,

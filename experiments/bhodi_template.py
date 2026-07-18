@@ -30,10 +30,10 @@ def experiment_step(i, arm, ctrl):
     """
     if i == 0:
         # Example: aim the flange probe forward (+90 deg about Y so the tool axis
-        # points at the block) and press its tip into the workpiece. The x press
-        # depth (0.44) into the compliant block sets the force (~20 N).
+        # points at the block) and press its tip on the workpiece. The x press
+        # depth (0.42) into the stiff block sets the force (~30 N).
         forward = np.array([0.7071, 0.0, 0.7071, 0.0])
-        ctrl.set_target_pose(np.array([0.44, 0.0, 0.62]), forward)
+        ctrl.set_target_pose(np.array([0.42, 0.0, 0.62]), forward)
 
     ctrl.apply()
 

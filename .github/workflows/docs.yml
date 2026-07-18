@@ -1,0 +1,38 @@
+name: Deploy docs
+
+# Build and publish the MkDocs site to GitHub Pages on every push to main
+# (i.e. when a PR merges), plus a manual trigger.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# gh-deploy pushes the built site to the gh-pages branch, which Pages serves.
+permissions:
+  contents: write
+
+# Never run two deploys at once; let an in-progress one finish.
+concurrency:
+  group: docs-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # gh-deploy needs history to update gh-pages
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install docs dependencies
+        run: pip install mkdocs-material
+
+      - name: Build (strict — fail on broken links/nav)
+        run: mkdocs build --strict
+
+      - name: Deploy to GitHub Pages
+        run: mkdocs gh-deploy --force

@@ -23,7 +23,9 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     app, sim = launch(headless=True, enable_cameras=True)
     handles = build_scene(sim, USD)
-    cam = SceneCamera(pos=(1.9, 1.9, 1.2), target=(0.42, 0.0, 0.62))
+    # Side profile framed on the probe-tip/block contact (front/3-4 angles hide
+    # the contact behind the block).
+    cam = SceneCamera(pos=(0.55, 1.9, 0.95), target=(0.58, 0.0, 0.62))
     sim.reset(); handles["arm"].initialize(); cam.initialize()
 
     frames = []

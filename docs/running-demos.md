@@ -16,24 +16,25 @@ Expected: printed position error falls from ~0.9 m to a few cm and holds.
 
 ## `force_demo.py` — hold a contact force
 
-The arm reaches forward and presses a vertical compliant panel, holding a
-**steady ~10 N** contact force.
+The arm aims a **flange probe** forward and presses its tip into a compliant
+workpiece block, holding a **steady contact force** (~20 N).
 
 ```powershell
 python scripts/force_demo.py
 ```
 
-Expected: after a brief contact transient (~24 N), `|Fx|` settles to and holds
-**~10 N**:
+Expected: after a contact transient, `|Fx|` settles and holds ~20 N:
 
 ```
-step 1500: |Fx|=10.9 N
-step 2000: |Fx|=10.6 N
-[RESULT] mean |F| over last 200 steps = 10.25 N (nominal 10)
+step 1500: |Fx|=24.1 N
+step 2000: |Fx|=22.3 N
+[RESULT] mean |F| over last 200 steps = 20.8 N (nominal 20)
 ```
 
 Change the held force by the press depth (`PRESS_TARGET_X` in the script):
-`0.565 → ~10 N`, `0.60 → ~19 N`, `0.62 → ~43 N`.
+`0.42 → ~16 N`, `0.44 → ~20 N`, `0.46 → ~34 N`. A rigid point-tool can't hold much
+below ~15 N (it loses contact) — soften the block (`stiffness` in the surface
+kwargs) for a lighter, steadier press.
 
 ## `record_demo.py` — video + force plot
 

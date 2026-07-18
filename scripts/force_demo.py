@@ -1,21 +1,23 @@
-"""Deliverable D: press the compliant panel and hold a steady contact force.
+"""Deliverable D: press the workpiece with the flange PROBE at a steady force.
 
-The surface is a VERTICAL panel in front of the arm; the arm reaches forward and
-presses HORIZONTALLY (+x) into it, in its dexterous zone (strong proximal joints,
-not the weak 40 N·m wrist that saturates when pressing down at reach).
+The arm reaches forward with a probe/tool on its flange (added in the scene) and
+presses the probe TIP horizontally (+x) into a compliant workpiece block, holding
+a steady contact force. Working in the dexterous zone (forward, mid-height) uses
+the strong proximal joints — pressing down at reach saturates the weak 40 N·m
+wrist. The flange is aimed forward so the tool tip (not the wrist) does the work.
 
 Force control is IMPEDANCE-BASED: the arm commands a fixed press depth into the
-compliant panel, and the steady contact force scales monotonically with depth.
-This is far more robust here than a feed-forward force command, which is too weak
-to hold contact against the arm's pose-restoring dynamics. Calibrated by sweep:
+compliant block; the steady force scales with depth. Calibrated by sweep (soft
+block, stiffness 400):
 
     press target x   steady |F|
-        0.58            ~10 N
-        0.60            ~19 N
-        0.62            ~43 N
-        0.70            ~63 N
+        0.42            ~16 N
+        0.44            ~17 N
+        0.46            ~34 N
 
-Change the held force by adjusting `press_target_x`.
+A rigid point-tool can't hold much below ~15 N (it loses contact), so the demo
+holds ~15 N. Change the force with `PRESS_TARGET_X` (and re-sweep if you change
+the block stiffness).
 """
 import os
 import numpy as np
@@ -25,12 +27,11 @@ from kuka_sim.controller import CartesianImpedanceController
 from kuka_sim.logging_utils import ForceLog
 
 USD = "assets/usd/iiwa7_r800.usd"
-PRESS_TARGET_X = 0.565           # press depth into the panel (tune for force; ~10 N)
-NOMINAL_FORCE_N = 10.0
-# z-target at the flange's natural forward-reach height so the z-axis does NOT
-# saturate (an unreachable z-target commands permanent max downward torque, which
-# drives a slow contact instability). Keeps only the x-press acting on the panel.
-PRESS_HEIGHT_Z = 0.80
+# Aim the flange +Z (probe/tool axis) toward world +X (at the block): +90° about Y.
+FORWARD_QUAT = np.array([0.7071, 0.0, 0.7071, 0.0])
+PRESS_TARGET_X = 0.44           # press depth into the block (tune for force)
+PRESS_HEIGHT_Z = 0.62           # reachable mid-height (no axis saturation)
+NOMINAL_FORCE_N = 20.0          # holds ~20 N (settles from a contact transient)
 
 
 def run(sim=None, app=None, handles=None, steps=2500, on_step=None,
@@ -46,13 +47,11 @@ def run(sim=None, app=None, handles=None, steps=2500, on_step=None,
 
     ctrl = CartesianImpedanceController(
         arm,
-        stiffness=np.array([1000, 1000, 1000, 30, 30, 30.0]),
-        damping=np.array([50, 50, 50, 7, 7, 7.0]),
+        stiffness=np.array([1000, 1000, 1000, 60, 60, 60.0]),   # firm orientation aim
+        damping=np.array([50, 50, 50, 10, 10, 10.0]),
     )
-    _, quat0 = arm.get_ee_pose()
-    # Reach forward and press a fixed depth into the panel; the compliant contact
-    # converts that depth into a steady force (~10 N at x=0.58).
-    ctrl.set_target_pose(np.array([press_target_x, 0.0, PRESS_HEIGHT_Z]), quat0)
+    # Aim the probe at the block and press a calibrated depth into it.
+    ctrl.set_target_pose(np.array([press_target_x, 0.0, PRESS_HEIGHT_Z]), FORWARD_QUAT)
 
     log = ForceLog()
     for i in range(steps):

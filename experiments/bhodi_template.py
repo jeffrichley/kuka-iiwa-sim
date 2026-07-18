@@ -29,11 +29,11 @@ def experiment_step(i, arm, ctrl):
       ctrl.apply()                             # compute torques + send to the arm
     """
     if i == 0:
-        # Example: press the panel at ~10 N. Hold the flange's natural
-        # forward-reach height (z~0.8) so the z-axis does not saturate; the
-        # x-depth (0.565) into the compliant panel sets the ~10 N contact force.
-        _, quat0 = arm.get_ee_pose()
-        ctrl.set_target_pose(np.array([0.565, 0.0, 0.80]), quat0)
+        # Example: aim the flange probe forward (+90 deg about Y so the tool axis
+        # points at the block) and press its tip into the workpiece. The x press
+        # depth (0.44) into the compliant block sets the force (~20 N).
+        forward = np.array([0.7071, 0.0, 0.7071, 0.0])
+        ctrl.set_target_pose(np.array([0.44, 0.0, 0.62]), forward)
 
     ctrl.apply()
 
@@ -51,8 +51,8 @@ def main():
 
     ctrl = CartesianImpedanceController(
         arm,
-        stiffness=np.array([1000, 1000, 1000, 30, 30, 30.0]),
-        damping=np.array([50, 50, 50, 7, 7, 7.0]),
+        stiffness=np.array([1000, 1000, 1000, 60, 60, 60.0]),   # firm orientation aim
+        damping=np.array([50, 50, 50, 10, 10, 10.0]),
     )
 
     for i in range(2000):

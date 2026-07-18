@@ -16,10 +16,10 @@ read its state there:
 ```python
 def experiment_step(i, arm, ctrl):
     if i == 0:
-        # Press the panel at ~10 N: hold the flange's forward-reach height (z~0.8)
-        # and command a calibrated press depth (x=0.565) into the compliant panel.
-        _, quat0 = arm.get_ee_pose()
-        ctrl.set_target_pose(np.array([0.565, 0.0, 0.80]), quat0)
+        # Aim the flange probe forward (+90 deg about Y) and press its tip into
+        # the workpiece block; the x press depth (0.44) sets the force (~20 N).
+        forward = np.array([0.7071, 0.0, 0.7071, 0.0])
+        ctrl.set_target_pose(np.array([0.44, 0.0, 0.62]), forward)
 
     ctrl.apply()                       # (1) compute + send torques
 
@@ -34,9 +34,9 @@ never touch the sim loop.
 ## Common things you'll want
 
 **Hold a target contact force.** Set the press depth from the calibration
-(`x=0.565 → ~10 N`, deeper → more). To hold a *different* force, change the x in
-`set_target_pose`, or re-run the sweep in `scripts/force_demo.py` for your
-surface stiffness.
+(`x=0.44 → ~20 N`, deeper → more). To hold a *different* force, change the x in
+`set_target_pose`, or re-run the sweep in `scripts/force_demo.py` for your block
+stiffness.
 
 **Change the force mid-run.** Call `ctrl.set_target_pose(...)` with a new x at any
 step to ramp or step the press.
@@ -62,6 +62,8 @@ log.save_plot("out/my_force.png", target=10.0)
 
 - Keep the press in the arm's **dexterous zone** (forward, mid-height). Pressing
   *down* at reach saturates the weak wrist — see [How it works](how-it-works.md).
-- Keep the pose target's `z` near the flange's natural reach height (~0.8) so the
-  z-axis doesn't saturate and destabilize contact.
+- Keep pose targets **reachable** (e.g. `z≈0.62` here) so no axis saturates and
+  destabilizes contact.
+- Aim the flange forward (`[0.7071, 0, 0.7071, 0]`) so the **probe tip** presses,
+  not the side of the wrist.
 - End your script with `app.close(); os._exit(0)` to avoid Isaac's shutdown hang.

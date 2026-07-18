@@ -58,14 +58,24 @@ and the flange backs off. A stronger position press holds fine, but isn't a
 force setpoint.
 
 **Fix:** **impedance-based force control.** Command a fixed press *depth* into the
-**compliant** panel; the contact converts depth into a steady force. It's stable,
-and the depth→force map is monotonic and calibratable:
+**compliant** workpiece; the contact converts depth into a steady force. It's
+stable, and the depth→force map is monotonic and calibratable:
 
 | press depth x | steady force |
 |---|---|
-| 0.565 | ~10 N |
-| 0.60 | ~19 N |
-| 0.62 | ~43 N |
+| 0.42 | ~16 N |
+| 0.44 | ~20 N |
+| 0.46 | ~34 N |
+
+### Press with a tool tip, not the wrist
+
+Without a tool, the *side of the wrist* contacts the surface — not a defined
+point. A **probe** is attached to the flange (`scene.py::_add_flange_probe`,
+spawned as a child of `lbr_link_7` so its contacts register on the flange
+sensor), and the flange is **aimed forward** (`+90°` about Y, so the flange +Z /
+tool axis points at the block) so the **tool tip** does the pressing — matching a
+real end-effector (probe / scalpel). A rigid point-tool can't hold much below
+~15 N (below that the tip loses contact); soften the block for a lighter press.
 
 ### A saturated axis drives slow instability
 

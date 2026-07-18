@@ -47,5 +47,9 @@ def record(frames, out_path, fps=30, audio_path=None, pip_video_path=None):
         base = os.path.join(td, "base.mp4")
         frames_to_mp4(frames, base, fps=fps)
         cmd = build_ffmpeg_cmd(ffmpeg, base, out_path, audio_path, pip_video_path)
-        subprocess.run(cmd, check=True, capture_output=True)
+        try:
+            subprocess.run(cmd, check=True, capture_output=True)
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(
+                "ffmpeg failed:\n" + e.stderr.decode(errors="replace")) from e
     return out_path

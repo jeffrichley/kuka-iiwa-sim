@@ -21,3 +21,11 @@ def test_shape_and_endpoints_preserved_under_smoothing():
     # smoothing reduces jitter -> less total path length than the noisy input
     def plen(a): return np.linalg.norm(np.diff(a, axis=0), axis=1).sum()
     assert plen(out) <= plen(pos)
+
+def test_even_smooth_win_preserves_shape():
+    import numpy as np
+    from kuka_sim.dance.trajectory import smooth_and_limit
+    pos = np.random.RandomState(1).randn(30, 3) * 0.01 + [0.5, 0.0, 0.6]
+    for win in (2, 4, 6):
+        out = smooth_and_limit(pos, 1.0 / 120.0, 0.5, smooth_win=win)
+        assert out.shape == (30, 3), f"win={win} gave {out.shape}"

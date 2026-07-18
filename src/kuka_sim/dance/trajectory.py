@@ -36,8 +36,9 @@ def smooth_and_limit(pos, dt, max_speed, smooth_win=5):
     motion; this makes it physically playable and graceful."""
     pos = np.asarray(pos, float)
     if smooth_win > 1 and len(pos) >= smooth_win:
-        pad = smooth_win // 2
-        padded = np.pad(pos, ((pad, pad), (0, 0)), mode="edge")
+        pad_l = smooth_win // 2
+        pad_r = smooth_win - 1 - pad_l          # total pad = smooth_win-1 -> output length N
+        padded = np.pad(pos, ((pad_l, pad_r), (0, 0)), mode="edge")
         k = np.ones(smooth_win) / smooth_win
         pos = np.stack(
             [np.convolve(padded[:, i], k, mode="valid") for i in range(pos.shape[1])],

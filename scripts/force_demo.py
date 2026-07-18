@@ -66,12 +66,21 @@ def run(sim=None, app=None, handles=None, steps=2500, on_step=None,
             print(f"step {i}: |Fx|={abs(fx):.2f} N  ee_x={ee[0]:.3f}", flush=True)
 
     _, f = log.as_arrays()
-    tail = np.linalg.norm(f[-200:], axis=1).mean() if len(f) >= 200 else np.nan
+    tail = np.linalg.norm(f[-200:], axis=1).mean() if len(f) >= 200 else float("nan")
+    # Verify the deliverable actually happened: a lost/never-made contact reads
+    # ~0 N, so assert the tail force is in a band around nominal and fail loudly.
+    lo, hi = 0.5 * NOMINAL_FORCE_N, 2.0 * NOMINAL_FORCE_N
+    ok = lo <= tail <= hi
     print(f"[RESULT] mean |F| over last 200 steps = {tail:.2f} N "
-          f"(nominal {NOMINAL_FORCE_N:.0f})", flush=True)
+          f"(nominal {NOMINAL_FORCE_N:.0f}) [{'OK' if ok else 'FAIL — no/weak contact'}]",
+          flush=True)
+    if not ok:
+        print(f"[WARN] contact force outside [{lo:.0f}, {hi:.0f}] N — the arm may not "
+              f"be pressing the workpiece (check the USD, reach, or press depth)",
+              flush=True)
     if owns:
         app.close()
-        os._exit(0)
+        os._exit(0 if ok else 1)   # nonzero exit on lost contact, for CI/automation
     return log
 
 

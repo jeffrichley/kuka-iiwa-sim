@@ -43,7 +43,7 @@ arm's real envelope.
 The iiwa 7 R800's **wrist joints are only 40 N·m** (vs 176 N·m at the shoulder).
 When the arm reaches *down and out* to a low table, it folds so those weak wrist
 joints bear the press — they saturate almost instantly. The arm can only **slam**
-(45–90 N, torque-saturated) or **float** off; there is no clean 10 N regime. This
+(45–90 N, torque-saturated) or **float** off; there is no clean light-force regime. This
 is true of the real robot too — it's the arm's workspace boundary, not a bug.
 
 **Fix:** press in the **dexterous zone** — a vertical panel in front of the arm,
@@ -86,14 +86,13 @@ block only if you want the tool to press **into** a malleable surface.
 
 ### A saturated axis drives slow instability
 
-Even in contact, the press first drifted upward (10 → 24 N) over several seconds.
-Cause: the pose target's **z was unreachable** (0.5 while the flange rests at
-0.8), so the z-axis permanently commanded *saturated* downward torque, which fed
-a slow rocking against the compliant panel.
+Even in contact, an early version drifted upward over several seconds. Cause:
+the pose target's **z was unreachable**, so the z-axis permanently commanded
+*saturated* torque, which fed a slow rocking against the surface.
 
-**Fix:** set the pose target's z to the flange's **natural reach height** (~0.8)
-so the z-axis de-saturates. The press then converges to a steady value
-(verified: 10.25 N mean, flat).
+**Fix:** keep the pose target's z at a **reachable** height (the shipped demo
+uses `z=0.62`) so no axis saturates. The press then converges to a steady value
+— the shipped demo holds **~30 N, flat**.
 
 ## Takeaways for your experiments
 

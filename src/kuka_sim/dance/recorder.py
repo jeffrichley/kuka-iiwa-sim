@@ -15,7 +15,9 @@ def build_ffmpeg_cmd(ffmpeg, base_path, out_path, audio_path=None,
         cmd += ["-i", audio_path]
 
     if pip_video_path is not None:
-        overlay = (f"[1:v]scale=iw*{pip_scale}:-1[p];"
+        # -2 (not -1) so the auto height rounds to an EVEN value; h.264/yuv420p
+        # rejects odd width/height at encode time.
+        overlay = (f"[1:v]scale=iw*{pip_scale}:-2[p];"
                    f"[0:v][p]overlay=W-w-{margin}:H-h-{margin}[v]")
         cmd += ["-filter_complex", overlay, "-map", "[v]"]
         if audio_path is not None:                    # audio is input index 2

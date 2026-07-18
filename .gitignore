@@ -19,6 +19,7 @@ env_isaaclab/
 .xacro_venv/
 build/
 dist/
+site/                  # mkdocs build output
 
 # --- Isaac Sim caches (in case anyone points them here) ---
 .cache/

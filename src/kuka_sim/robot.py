@@ -37,7 +37,7 @@ class IiwaArm:
         contact_cfg = ContactSensorCfg(
             prim_path=f"{prim_path}/{ee_body}",
             update_period=0.0, history_length=4, track_pose=True,   # history → smoothing
-            filter_prim_paths_expr=[surface_prim],
+            filter_prim_paths_expr=([surface_prim] if surface_prim else []),
         )
         self.contact = ContactSensor(contact_cfg)
 

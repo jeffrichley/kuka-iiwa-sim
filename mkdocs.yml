@@ -2,6 +2,8 @@ site_name: KUKA iiwa 7 R800 — Simulated Digital Twin
 site_description: >-
   NVIDIA Isaac Sim digital twin of the KUKA LBR iiwa 7 R800 with Cartesian
   impedance / force control.
+site_url: https://jeffrichley.github.io/kuka-iiwa-sim/
+repo_url: https://github.com/jeffrichley/kuka-iiwa-sim
 docs_dir: docs
 
 theme:

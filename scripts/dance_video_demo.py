@@ -63,14 +63,18 @@ def _beat_env(media_path, n_frames, fps):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--video", required=True, help="source clip (for PiP + audio)")
+    ap.add_argument("--video", required=True, help="source clip (for PiP)")
     ap.add_argument("--poses", required=True, help=".npz from scripts/extract_pose.py")
     ap.add_argument("--scorer", default="blend", choices=list(SCORERS))
+    ap.add_argument("--audio", default=None,
+                    help="soundtrack to mux + drive beat_env (e.g. a song); "
+                         "falls back to the clip's own audio if omitted")
     ap.add_argument("--seconds", type=float, default=None)
     ap.add_argument("--no-pip", action="store_true")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
     os.makedirs(OUT_DIR, exist_ok=True)
+    audio_src = args.audio or args.video   # song if given, else the clip's audio
 
     print(f"[poses] {args.poses}", flush=True)
     track = load_pose_track(args.poses)
@@ -82,13 +86,13 @@ def main():
 
     ctx = ScorerCtx()
     if args.scorer in ("music", "blend"):
-        ctx.beat_env = _beat_env(args.video, F, track.fps)
+        ctx.beat_env = _beat_env(audio_src, F, track.fps)
     if args.scorer == "saliency":
         ctx.gray_frames = gray
 
     focus = SCORERS[args.scorer](track, ctx)
     pip = None if args.no_pip else args.video
-    traj = retarget(focus, track.fps, dt=DT, video_path=pip, audio_path=args.video)
+    traj = retarget(focus, track.fps, dt=DT, video_path=pip, audio_path=audio_src)
     traj.ee_pos = smooth_and_limit(traj.ee_pos, DT, max_speed=0.6)
     print(f"[retarget] scorer={args.scorer} {len(traj)} samples", flush=True)
 

@@ -882,11 +882,11 @@ unit-tested against a <code>FakeArm</code> with no GPU.</p>
 <p>The arm is torque-controlled: the actuators are configured with
 <code>stiffness = damping = 0</code>, so commanded joint efforts pass straight through. On
 top of that, the Cartesian impedance controller computes</p>
-<p>$$\tau = J^\top\,(K\,x_e - D\,\dot{x}) + g(q)$$</p>
+<div class="arithmatex">\[\tau = J^\top\,(K\,x_e - D\,\dot{x}) + g(q)\]</div>
 <ul>
-<li>(x_e) — pose error (position + axis-angle orientation), world frame</li>
-<li>(J) — end-effector Jacobian; (g(q)) — gravity compensation</li>
-<li>(K, D) — per-axis task-space stiffness / damping</li>
+<li><span class="arithmatex">\(x_e\)</span> — pose error (position + axis-angle orientation), world frame</li>
+<li><span class="arithmatex">\(J\)</span> — end-effector Jacobian; <span class="arithmatex">\(g(q)\)</span> — gravity compensation</li>
+<li><span class="arithmatex">\(K, D\)</span> — per-axis task-space stiffness / damping</li>
 <li>force-selected axes replace their impedance term with a feed-forward wrench</li>
 </ul>
 <p>Torque is clamped to the iiwa spec. Gravity compensation is added <strong>before</strong>
@@ -1023,6 +1023,10 @@ uses <code>z=0.62</code>) so no axis saturates. The press then converges to a st
     
     
       <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
       
     
   </body>

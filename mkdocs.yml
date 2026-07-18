@@ -33,12 +33,18 @@ markdown_extensions:
   - admonition
   - attr_list
   - tables
+  - pymdownx.arithmatex:      # LaTeX math ($$...$$ and \(...\)) via MathJax
+      generic: true
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
   - pymdownx.superfences
   - toc:
       permalink: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
 # Keep the internal research/spec docs out of the published site.
 exclude_docs: |

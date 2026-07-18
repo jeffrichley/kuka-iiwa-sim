@@ -32,15 +32,27 @@ DT = 1.0 / 120.0
 CAPTURE_EVERY = 4
 
 
-def _beat_env(video_path, n_frames, fps):
-    """Per-frame music energy from the video's audio (librosa), on the frame grid.
-    Best-effort: returns zeros if the audio can't be decoded."""
-    import librosa
+def _beat_env(media_path, n_frames, fps):
+    """Per-frame music energy from a clip's audio, on the frame grid. Extracts
+    audio to a temp wav with the bundled ffmpeg first (librosa can't read mp4
+    audio directly). Best-effort: returns zeros if there's no decodable audio."""
+    import librosa, tempfile, subprocess, imageio_ffmpeg
+    tmp = None
     try:
-        y, sr = librosa.load(video_path, sr=None, mono=True)
+        ff = imageio_ffmpeg.get_ffmpeg_exe()
+        tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
+        subprocess.run([ff, "-y", "-i", media_path, "-vn", "-ac", "1",
+                        "-ar", "22050", tmp], capture_output=True, check=True)
+        y, sr = librosa.load(tmp, sr=None, mono=True)
     except Exception as e:
-        print(f"[warn] librosa could not read audio ({e}); beat_env=0", flush=True)
+        print(f"[warn] no decodable audio ({e}); beat_env=0", flush=True)
         return np.zeros(n_frames)
+    finally:
+        if tmp and os.path.exists(tmp):
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
     rms = librosa.feature.rms(y=y)[0]
     rms_t = librosa.frames_to_time(np.arange(len(rms)), sr=sr)
     frame_t = np.arange(n_frames) / fps

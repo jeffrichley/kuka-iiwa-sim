@@ -26,22 +26,22 @@ def _resize_gray(rgb, hw=GRAY_HW):
 
 
 def read_frames(video_path, max_frames=None):
-    import imageio.v3 as iio
-    try:
-        fps = float(iio.immeta(video_path, plugin="pyav").get("fps", 30.0))
-    except Exception:
-        fps = 30.0
+    # imageio's ffmpeg reader (imageio-ffmpeg) reliably reports true fps.
+    import imageio
+    r = imageio.get_reader(video_path)
+    fps = float(r.get_meta_data().get("fps", 30.0))
     frames = []
-    for i, fr in enumerate(iio.imiter(video_path)):
+    for i, fr in enumerate(r):
         if max_frames is not None and i >= max_frames:
             break
         frames.append(np.asarray(fr)[:, :, :3])
+    r.close()
     return frames, fps
 
 
 def detect(frames):
     import mediapipe as mp
-    pose = mp.solutions.pose.Pose(static_image_mode=False, model_complexity=1)
+    pose = mp.solutions.pose.Pose(static_image_mode=False, model_complexity=2)
     F = len(frames)
     xy = np.full((F, N_LANDMARKS, 2), np.nan)
     vis = np.zeros((F, N_LANDMARKS))

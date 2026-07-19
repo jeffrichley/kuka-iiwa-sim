@@ -27,6 +27,9 @@ DOWN = np.array([0.0, 1.0, 0.0])   # world +y points down
 
 DEFAULT_GAINS = dict(
     a1_gain=1.2, a2_gain=1.3, a4_gain=1.4, a6_gain=1.0,
+    # Per-joint sign. A2 & A6 both rotate about +y, where a positive angle pitches
+    # DOWN -> flip them so her arm-up reads as robot-up. A4 is on the -y axis.
+    a1_sign=1.0, a2_sign=-1.0, a4_sign=-1.0, a6_sign=-1.0,
     a2_offset=-np.pi / 2,   # center A2 so a horizontal arm -> ~0
     a4_offset=0.0,
 )
@@ -69,9 +72,9 @@ def mimic_joint_traj(xyz, side="right", gains=None):
         # forearm elevation (drives the wrist so the hand's up/down reads)
         fore_elev = _angle(fore, DOWN)
 
-        q[i, 0] = g["a1_gain"] * azim                       # A1 base yaw
-        q[i, 1] = g["a2_gain"] * (elev + g["a2_offset"])    # A2 shoulder
-        q[i, 3] = -g["a4_gain"] * (flex + g["a4_offset"])   # A4 elbow
-        q[i, 5] = g["a6_gain"] * (fore_elev - np.pi / 2)    # A6 wrist pitch
+        q[i, 0] = g["a1_sign"] * g["a1_gain"] * azim                     # A1 base yaw
+        q[i, 1] = g["a2_sign"] * g["a2_gain"] * (elev + g["a2_offset"])  # A2 shoulder
+        q[i, 3] = g["a4_sign"] * g["a4_gain"] * (flex + g["a4_offset"])  # A4 elbow
+        q[i, 5] = g["a6_sign"] * g["a6_gain"] * (fore_elev - np.pi / 2)  # A6 wrist pitch
 
     return np.clip(q, -IIWA_LIMITS, IIWA_LIMITS)

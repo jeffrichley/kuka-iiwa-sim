@@ -11,8 +11,18 @@ def test_audio_only():
 def test_pip_only():
     c = build_ffmpeg_cmd("ffmpeg", "b.mp4", "o.mp4", pip_video_path="d.mp4")
     fc = c[c.index("-filter_complex") + 1]
-    assert "scale=iw*0.25" in fc and "overlay=W-w-20:H-h-20" in fc
+    assert "scale=-2:" in fc and "overlay=W-w-20:H-h-20" in fc
     assert "[v]" in c and c[-1] == "o.mp4"
+
+
+def test_pip_height_is_fraction_of_base_height():
+    # PiP height must be a fraction of the OUTPUT frame height, not the source's
+    # own width (the old bug ballooned a tall vertical clip past the frame).
+    c = build_ffmpeg_cmd("ffmpeg", "b.mp4", "o.mp4", pip_video_path="d.mp4",
+                         pip_scale=0.25, base_h=540)
+    fc = c[c.index("-filter_complex") + 1]
+    assert "scale=-2:134" in fc          # int(540*0.25)=135 -> even 134
+    assert "iw" not in fc                 # must NOT scale by the source's own width
 
 def test_audio_and_pip_input_order_and_maps():
     c = build_ffmpeg_cmd("ffmpeg", "b.mp4", "o.mp4",

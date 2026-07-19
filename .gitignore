@@ -36,3 +36,4 @@ logs/
 Thumbs.db
 .DS_Store
 .pose_venv/
+.preview_venv/

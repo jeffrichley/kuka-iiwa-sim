@@ -25,6 +25,12 @@ from kuka_sim.dance.video.mimic import mimic_joint_traj
 
 URDF = "assets/urdf/lbr_iiwa7_r800_description/iiwa7_r800.urdf"
 
+# MediaPipe skeleton edges (subset that reads clearly) + the arm chains.
+BODY_EDGES = [(11, 12), (11, 23), (12, 24), (23, 24), (11, 13), (13, 15),
+              (12, 14), (14, 16), (23, 25), (25, 27), (24, 26), (26, 28),
+              (27, 31), (28, 32), (15, 17), (16, 18)]
+ARM_CHAIN = {"right": [(12, 14), (14, 16)], "left": [(11, 13), (13, 15)]}
+
 
 def fk_dots(q7):
     chain = Chain.from_urdf_file(URDF, base_elements=["lbr_link_0"])
@@ -44,7 +50,9 @@ def main():
     args = ap.parse_args()
     os.makedirs("out", exist_ok=True)
 
-    xyz = np.nan_to_num(np.load(args.pose)["xyz"].astype(float), nan=0.0)
+    data = np.load(args.pose)
+    xyz = np.nan_to_num(data["xyz"].astype(float), nan=0.0)
+    xy = np.nan_to_num(data["xy"][0].astype(float), nan=0.0)   # 2D, normalized [0,1]
     q = mimic_joint_traj(xyz[:1], side=args.side)[0]
     dots = fk_dots(q)
     names = ["A1", "A2", "A3", "A4", "A5", "A6", "A7"]
@@ -53,7 +61,16 @@ def main():
 
     fig = plt.figure(figsize=(11, 6), dpi=110)
     axp = fig.add_subplot(1, 2, 1)
-    axp.imshow(mpimg.imread(args.photo)); axp.axis("off"); axp.set_title("photo")
+    img = mpimg.imread(args.photo)
+    H, W = img.shape[:2]
+    axp.imshow(img); axp.axis("off")
+    px, py = xy[:, 0] * W, xy[:, 1] * H
+    for a, b in BODY_EDGES:                                   # full skeleton (green)
+        axp.plot([px[a], px[b]], [py[a], py[b]], color="lime", lw=2, alpha=0.7, zorder=2)
+    for a, b in ARM_CHAIN[args.side]:                        # driving arm (red)
+        axp.plot([px[a], px[b]], [py[a], py[b]], color="red", lw=3.5, zorder=3)
+    axp.scatter(px, py, s=14, c="yellow", edgecolors="black", lw=0.4, zorder=4)
+    axp.set_title(f"photo + detected pose (red = {args.side} arm)")
 
     ax = fig.add_subplot(1, 2, 2, projection="3d")
     allp = dots

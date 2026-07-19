@@ -103,6 +103,8 @@ def main():
     ap.add_argument("--camera", default="hero")
     ap.add_argument("--poses", default="out/dance_studio_poses.npz")
     ap.add_argument("--scorer", default="energy")
+    ap.add_argument("--start", type=float, default=0.0,
+                    help="preview from this many seconds into the song/clip")
     ap.add_argument("--seconds", type=float, default=None)
     ap.add_argument("--max-speed", type=float, default=1.0)
     ap.add_argument("--fps", type=int, default=30)
@@ -116,6 +118,8 @@ def main():
         traj = build_video_traj(args.poses, args.scorer, args.song)
 
     ee = traj.ee_pos
+    start_i = int(args.start / DT)
+    ee = ee[start_i:]
     if args.seconds is not None:
         ee = ee[:int(args.seconds / DT)]
     ee = smooth_and_limit(ee, DT, max_speed=args.max_speed)
@@ -154,9 +158,29 @@ def main():
         return link_line, ee_dot, trail, title
 
     ani = FuncAnimation(fig, update, frames=len(dots), interval=1000 / args.fps, blit=False)
-    plt.rcParams["animation.ffmpeg_path"] = imageio_ffmpeg.get_ffmpeg_exe()
-    ani.save(args.out, writer=FFMpegWriter(fps=args.fps, bitrate=2400))
+    ff = imageio_ffmpeg.get_ffmpeg_exe()
+    plt.rcParams["animation.ffmpeg_path"] = ff
+    silent = args.out + ".silent.mp4"
+    ani.save(silent, writer=FFMpegWriter(fps=args.fps, bitrate=2400))
+    _mux_audio(ff, silent, args.song, args.out, args.start)
     print(f"[OK] wrote {args.out} ({len(dots)} frames)", flush=True)
+
+
+def _mux_audio(ffmpeg, silent_path, song, out_path, start=0.0):
+    """Mux the song onto the silent preview (from `start` seconds in, trimmed to
+    the video length via -shortest) so the arm can be judged against the music,
+    then drop the silent temp. Falls back to the silent file if the mux fails."""
+    import subprocess
+    cmd = [ffmpeg, "-y", "-i", silent_path, "-ss", str(start), "-i", song,
+           "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac",
+           "-shortest", out_path]
+    try:
+        subprocess.run(cmd, check=True, capture_output=True)
+        os.remove(silent_path)
+    except subprocess.CalledProcessError as e:
+        print("[warn] audio mux failed; keeping silent preview:\n"
+              + e.stderr.decode(errors="replace")[-500:], flush=True)
+        os.replace(silent_path, out_path)
 
 
 if __name__ == "__main__":

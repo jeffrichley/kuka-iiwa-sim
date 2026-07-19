@@ -61,13 +61,20 @@ def detect(frames):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--video", required=True)
+    ap.add_argument("--video", default=None)
+    ap.add_argument("--image", default=None, help="a single photo instead of a video")
     ap.add_argument("--out", required=True)
     ap.add_argument("--max-frames", type=int, default=None)
     args = ap.parse_args()
 
-    print(f"[read] {args.video}", flush=True)
-    frames, fps = read_frames(args.video, args.max_frames)
+    if args.image:
+        import imageio.v2 as imageio
+        print(f"[read] {args.image}", flush=True)
+        frames = [np.asarray(imageio.imread(args.image))[:, :, :3]]
+        fps = 1.0
+    else:
+        print(f"[read] {args.video}", flush=True)
+        frames, fps = read_frames(args.video, args.max_frames)
     print(f"[detect] {len(frames)} frames @ {fps:.2f} fps", flush=True)
     xy, xyz, vis = detect(frames)
     gray = np.stack([_resize_gray(f) for f in frames]) if frames else np.zeros((0,) + GRAY_HW)

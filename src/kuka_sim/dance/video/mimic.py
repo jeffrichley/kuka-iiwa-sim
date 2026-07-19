@@ -19,18 +19,19 @@ R_HIP, L_HIP = 24, 23
 
 IIWA_LIMITS = np.deg2rad([170.0, 120.0, 170.0, 120.0, 170.0, 120.0, 175.0])
 
-X_AXIS = np.array([1.0, 0.0, 0.0])   # her right
-Z_AXIS = np.array([0.0, 0.0, 1.0])   # toward camera
+X_AXIS = np.array([1.0, 0.0, 0.0])    # image left/right
+Z_AXIS = np.array([0.0, 0.0, 1.0])    # toward camera
+WORLD_UP = np.array([0.0, -1.0, 0.0])  # +y is down, so up is -y
 
 DEFAULT_GAINS = dict(
-    # --- torso (base joints) ---
+    # "Unroll the chain": torso -> base joints, arm -> upper joints (no sharing).
+    # --- torso -> base (A1 yaw, A2 fold, A3 side-lean) ---
     a1_twist=1.2,     # shoulders rotate over hips -> base yaw
-    a2_lean=1.2,      # torso bows forward/back -> base pitch offset
+    a2_fold=1.4,      # torso bows forward/back -> base folds (THE lean you wanted)
     a3_bend=1.6,      # torso side-bend -> roll
-    # --- arm (frontal-plane angle, in the torso frame) ---
-    a2_gain=1.0,      # upper-arm angle in the frontal plane -> shoulder pitch
-    a4_gain=-1.4,     # elbow flexion -> elbow (neg for -y axis)
-    a6_gain=0.8,      # forearm bend beyond the elbow -> wrist pitch
+    # --- arm, relative to the torso -> upper joints (A4 shoulder, A6 elbow) ---
+    a4_gain=1.3,      # arm lifts off the spine -> A4 (shoulder elevation)
+    a6_gain=-1.4,     # elbow flexion -> A6 (elbow)
 )
 
 
@@ -86,18 +87,21 @@ def mimic_joint_traj(xyz, side="right", gains=None):
         # ~0 when frontal (shoulders across the image), grows as she turns.
         twist = float(np.arcsin(np.clip(across @ Z_AXIS, -1.0, 1.0)))
 
-        # --- arm, as SIGNED frontal-plane angles in the torso frame (keeps
-        # left/right, so the arm points out to the side, not just up/down) ---
+        # --- arm as SIGNED frontal-plane angle RELATIVE TO THE TORSO, so it
+        # composes with the base lean (the base folds like her torso, the arm
+        # rides on top). 0 = along the spine, +pi/2 = out across, +-pi = down. ---
         upper = p[el_i] - p[sh_i]
         fore = p[wr_i] - p[el_i]
-        upper_ang = _frontal(upper, across, up)             # arm direction in frontal plane
+        upper_ang = _frontal(upper, across, up)
         fore_ang = _frontal(fore, across, up)
         flex = _angle(upper, fore)                          # elbow: 0 straight .. pi folded
 
-        q[i, 0] = g["a1_twist"] * twist
-        q[i, 1] = g["a2_gain"] * upper_ang + g["a2_lean"] * lean_fwd
-        q[i, 2] = g["a3_bend"] * side_bend
-        q[i, 3] = g["a4_gain"] * flex
-        q[i, 5] = g["a6_gain"] * (fore_ang - upper_ang)
+        # torso forward/back fold (spine tilt in the sagittal/depth plane)
+        sagittal = float(np.arctan2(up @ Z_AXIS, up @ WORLD_UP))
+        q[i, 0] = g["a1_twist"] * twist       # base yaw   <- torso twist
+        q[i, 1] = g["a2_fold"] * sagittal     # base fold  <- torso bow (the lean)
+        q[i, 2] = g["a3_bend"] * side_bend    # base roll  <- torso side-lean
+        q[i, 3] = g["a4_gain"] * upper_ang    # shoulder   <- arm lift rel. torso
+        q[i, 5] = g["a6_gain"] * flex         # elbow      <- her elbow flexion
 
     return np.clip(q, -IIWA_LIMITS, IIWA_LIMITS)

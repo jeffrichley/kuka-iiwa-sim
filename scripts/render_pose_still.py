@@ -32,6 +32,19 @@ BODY_EDGES = [(11, 12), (11, 23), (12, 24), (23, 24), (11, 13), (13, 15),
 ARM_CHAIN = {"right": [(12, 14), (14, 16)], "left": [(11, 13), (13, 15)]}
 
 
+def _hand_glyph(ax, dots):
+    """A little 3-finger fan at the flange (character), along the approach axis."""
+    ee = dots[-1]
+    d = dots[-1] - dots[-2]
+    d = d / (np.linalg.norm(d) + 1e-9)
+    perp = np.cross(d, [0, 0, 1.0]); perp = perp / (np.linalg.norm(perp) + 1e-9)
+    for s in (-1, 0, 1):
+        tip = ee + d * 0.10 + perp * (s * 0.035)
+        ax.plot([ee[0], tip[0]], [ee[1], tip[1]], [ee[2], tip[2]],
+                color="crimson", lw=2.5)
+    ax.plot([ee[0]], [ee[1]], [ee[2]], "o", color="crimson", ms=7)
+
+
 def fk_dots(q7):
     chain = Chain.from_urdf_file(URDF, base_elements=["lbr_link_0"])
     q_full = np.concatenate([[0.0], q7, [0.0]])
@@ -44,8 +57,8 @@ def main():
     ap.add_argument("--pose", required=True, help=".npz from extract_pose --image")
     ap.add_argument("--photo", required=True)
     ap.add_argument("--side", default="right", choices=["right", "left"])
-    ap.add_argument("--azim", type=float, default=-60.0)
-    ap.add_argument("--elev", type=float, default=18.0)
+    ap.add_argument("--azim", type=float, default=-90.0)   # front-on, matches the photo
+    ap.add_argument("--elev", type=float, default=8.0)
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
     os.makedirs("out", exist_ok=True)
@@ -80,7 +93,7 @@ def main():
     ax.set_box_aspect((1, 1, 1)); ax.view_init(elev=args.elev, azim=args.azim)
     ax.set_xlabel("x"); ax.set_ylabel("y"); ax.set_zlabel("z")
     ax.plot(dots[:, 0], dots[:, 1], dots[:, 2], "-o", color="tab:blue", lw=3, ms=6, mfc="white")
-    ax.plot([dots[-1, 0]], [dots[-1, 1]], [dots[-1, 2]], "o", color="crimson", ms=9)
+    _hand_glyph(ax, dots)
     ax.set_title(f"robot (mimic:{args.side})")
 
     fig.tight_layout()

@@ -103,6 +103,8 @@ def main():
     ap.add_argument("--camera", default="hero")
     ap.add_argument("--poses", default="out/dance_studio_poses.npz")
     ap.add_argument("--scorer", default="energy")
+    ap.add_argument("--dancer", default=None,
+                    help="source dance clip to show side-by-side with the arm")
     ap.add_argument("--start", type=float, default=0.0,
                     help="preview from this many seconds into the song/clip")
     ap.add_argument("--seconds", type=float, default=None)
@@ -132,7 +134,7 @@ def main():
 
     dots = ik_joint_positions(ee_s)                  # (F, L, 3)
 
-    fig = plt.figure(figsize=(6, 6))
+    fig = plt.figure(figsize=(6, 6), dpi=100)   # -> 600x600, known for side-by-side
     ax = fig.add_subplot(111, projection="3d")
     ax.set_xlim(-0.2, 0.8); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0, 1.0)
     ax.set_box_aspect((1, 1, 1)); ax.view_init(elev=18, azim=-60)
@@ -162,24 +164,32 @@ def main():
     plt.rcParams["animation.ffmpeg_path"] = ff
     silent = args.out + ".silent.mp4"
     ani.save(silent, writer=FFMpegWriter(fps=args.fps, bitrate=2400))
-    _mux_audio(ff, silent, args.song, args.out, args.start)
+    _finish(ff, silent, args.song, args.out, args.start, args.fps, args.dancer)
     print(f"[OK] wrote {args.out} ({len(dots)} frames)", flush=True)
 
 
-def _mux_audio(ffmpeg, silent_path, song, out_path, start=0.0):
-    """Mux the song onto the silent preview (from `start` seconds in, trimmed to
-    the video length via -shortest) so the arm can be judged against the music,
-    then drop the silent temp. Falls back to the silent file if the mux fails."""
+def _finish(ffmpeg, silent_path, song, out_path, start, fps, dancer=None, arm_h=600):
+    """Produce the final preview: mux the song, and — if a dancer clip is given —
+    show it side-by-side (dancer left, arm right, time-aligned) so you can see
+    whether the arm follows her. Falls back to the silent file if ffmpeg fails."""
     import subprocess
-    cmd = [ffmpeg, "-y", "-i", silent_path, "-ss", str(start), "-i", song,
-           "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac",
-           "-shortest", out_path]
+    if dancer is not None:
+        # dancer scaled to the arm's height, re-timed to the arm's fps, placed
+        # left of the arm; song muxed from `start`, trimmed to the shorter stream.
+        filt = (f"[1:v]fps={fps},scale=-2:{arm_h}[d];[d][0:v]hstack=inputs=2[v]")
+        cmd = [ffmpeg, "-y", "-i", silent_path, "-ss", str(start), "-i", dancer,
+               "-ss", str(start), "-i", song, "-filter_complex", filt,
+               "-map", "[v]", "-map", "2:a", "-c:a", "aac", "-shortest", out_path]
+    else:
+        cmd = [ffmpeg, "-y", "-i", silent_path, "-ss", str(start), "-i", song,
+               "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac",
+               "-shortest", out_path]
     try:
         subprocess.run(cmd, check=True, capture_output=True)
         os.remove(silent_path)
     except subprocess.CalledProcessError as e:
-        print("[warn] audio mux failed; keeping silent preview:\n"
-              + e.stderr.decode(errors="replace")[-500:], flush=True)
+        print("[warn] ffmpeg finish failed; keeping silent preview:\n"
+              + e.stderr.decode(errors="replace")[-600:], flush=True)
         os.replace(silent_path, out_path)
 
 

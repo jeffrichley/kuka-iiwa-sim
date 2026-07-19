@@ -83,6 +83,28 @@ def ik_joint_positions(ee_pos):
     return np.array(dots)   # (F, n_links, 3)
 
 
+def fk_joint_positions(q7):
+    """(F,7) iiwa joint angles -> (F, n_links, 3) link-frame positions for drawing.
+    The chain is [base(fixed), A1..A7, ee(fixed)], so pad each side with 0."""
+    chain = Chain.from_urdf_file(URDF, base_elements=["lbr_link_0"])
+    dots = []
+    for q in q7:
+        q_full = np.concatenate([[0.0], q, [0.0]])          # base + 7 + ee
+        fk = chain.forward_kinematics(q_full, full_kinematics=True)
+        dots.append(np.array([T[:3, 3] for T in fk]))
+    return np.array(dots)
+
+
+def _smooth_q(q, win):
+    """Edge-padded moving average over time for each joint (de-jitter the pose)."""
+    if win <= 1 or len(q) < win:
+        return q
+    pad_l, pad_r = win // 2, win - 1 - win // 2
+    qp = np.pad(q, ((pad_l, pad_r), (0, 0)), mode="edge")
+    k = np.ones(win) / win
+    return np.stack([np.convolve(qp[:, j], k, mode="valid") for j in range(q.shape[1])], axis=1)
+
+
 def _box_edges(center, half):
     c, h = center, half
     corners = np.array([[sx, sy, sz] for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)])
@@ -97,12 +119,13 @@ def _box_edges(center, half):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", choices=["music", "video"], required=True)
+    ap.add_argument("--mode", choices=["music", "video", "mimic"], required=True)
     ap.add_argument("--song", default="assets/audio/blue_danube.mp3")
     ap.add_argument("--style", default="waltz")
     ap.add_argument("--camera", default="hero")
     ap.add_argument("--poses", default="out/dance_studio_poses.npz")
     ap.add_argument("--scorer", default="energy")
+    ap.add_argument("--side", default="right", choices=["right", "left"])
     ap.add_argument("--dancer", default=None,
                     help="source dance clip to show side-by-side with the arm")
     ap.add_argument("--start", type=float, default=0.0,
@@ -114,34 +137,56 @@ def main():
     args = ap.parse_args()
     os.makedirs("out", exist_ok=True)
 
-    if args.mode == "music":
-        traj = build_music_traj(args.song, args.style, args.camera)
+    if args.mode == "mimic":
+        # joint-space: her arm's 3D angles -> robot joints -> FK. Runs at the
+        # video's own fps so it's frame-aligned with the dancer side-by-side.
+        from kuka_sim.dance.video.mimic import mimic_joint_traj
+        d = np.load(args.poses)
+        xyz = np.nan_to_num(d["xyz"].astype(float), nan=0.0)
+        out_fps = float(d["fps"])
+        s0 = int(args.start * out_fps)
+        xyz = xyz[s0:]
+        if args.seconds is not None:
+            xyz = xyz[:int(args.seconds * out_fps)]
+        q = mimic_joint_traj(xyz, side=args.side)
+        q = _smooth_q(q, max(1, int(round(out_fps * 0.15))))     # ~150 ms
+        dots = fk_joint_positions(q)
+        label = f"mimic:{args.side}"
     else:
-        traj = build_video_traj(args.poses, args.scorer, args.song)
+        if args.mode == "music":
+            traj = build_music_traj(args.song, args.style, args.camera)
+            label = args.style
+        else:
+            traj = build_video_traj(args.poses, args.scorer, args.song)
+            label = args.scorer
+        ee = traj.ee_pos[int(args.start / DT):]
+        if args.seconds is not None:
+            ee = ee[:int(args.seconds / DT)]
+        ee = smooth_and_limit(ee, DT, max_speed=args.max_speed)
+        step = max(1, int(round(1.0 / DT / args.fps)))   # 120Hz -> fps
+        dots = ik_joint_positions(ee[::step])            # (F, L, 3)
+        out_fps = float(args.fps)
 
-    ee = traj.ee_pos
-    start_i = int(args.start / DT)
-    ee = ee[start_i:]
-    if args.seconds is not None:
-        ee = ee[:int(args.seconds / DT)]
-    ee = smooth_and_limit(ee, DT, max_speed=args.max_speed)
-
-    step = max(1, int(round(1.0 / DT / args.fps)))   # 120Hz -> fps
-    ee_s = ee[::step]
-    travel = (ee_s.max(0) - ee_s.min(0)) * 100
-    print(f"[preview] {len(ee_s)} frames; EE travel cm x={travel[0]:.1f} "
-          f"y={travel[1]:.1f} z={travel[2]:.1f}", flush=True)
-
-    dots = ik_joint_positions(ee_s)                  # (F, L, 3)
+    tip = dots[:, -1]
+    travel = (tip.max(0) - tip.min(0)) * 100
+    print(f"[preview] {len(dots)} frames @ {out_fps:.0f}fps; flange travel cm "
+          f"x={travel[0]:.1f} y={travel[1]:.1f} z={travel[2]:.1f}", flush=True)
 
     fig = plt.figure(figsize=(6, 6), dpi=100)   # -> 600x600, known for side-by-side
     ax = fig.add_subplot(111, projection="3d")
-    ax.set_xlim(-0.2, 0.8); ax.set_ylim(-0.5, 0.5); ax.set_zlim(0, 1.0)
+    # frame the arm from its actual reach (mimic swings much wider than the box)
+    allpts = dots.reshape(-1, 3)
+    ctr = allpts.mean(0)
+    rad = max(0.5, float(np.abs(allpts - ctr).max()) * 1.1)
+    ax.set_xlim(ctr[0] - rad, ctr[0] + rad)
+    ax.set_ylim(ctr[1] - rad, ctr[1] + rad)
+    ax.set_zlim(min(0, allpts[:, 2].min()), max(allpts[:, 2].max() * 1.1, rad))
     ax.set_box_aspect((1, 1, 1)); ax.view_init(elev=18, azim=-60)
     ax.set_xlabel("x"); ax.set_ylabel("y"); ax.set_zlabel("z")
 
-    for a, b in _box_edges(BOX_CENTER, BOX_HALF):
-        ax.plot(*zip(a, b), color="tab:orange", lw=0.6, alpha=0.5)
+    if args.mode != "mimic":
+        for a, b in _box_edges(BOX_CENTER, BOX_HALF):
+            ax.plot(*zip(a, b), color="tab:orange", lw=0.6, alpha=0.5)
 
     link_line, = ax.plot([], [], [], "-o", color="tab:blue", lw=3, ms=5, mfc="white")
     ee_dot, = ax.plot([], [], [], "o", color="crimson", ms=8)
@@ -155,16 +200,15 @@ def main():
         lo = max(0, i - 30)
         tp = dots[lo:i + 1, -1]
         trail.set_data(tp[:, 0], tp[:, 1]); trail.set_3d_properties(tp[:, 2])
-        title.set_text(f"{args.mode}:{args.style if args.mode=='music' else args.scorer}"
-                       f"  frame {i}/{len(dots)}")
+        title.set_text(f"{args.mode}:{label}  frame {i}/{len(dots)}")
         return link_line, ee_dot, trail, title
 
-    ani = FuncAnimation(fig, update, frames=len(dots), interval=1000 / args.fps, blit=False)
+    ani = FuncAnimation(fig, update, frames=len(dots), interval=1000 / out_fps, blit=False)
     ff = imageio_ffmpeg.get_ffmpeg_exe()
     plt.rcParams["animation.ffmpeg_path"] = ff
     silent = args.out + ".silent.mp4"
-    ani.save(silent, writer=FFMpegWriter(fps=args.fps, bitrate=2400))
-    _finish(ff, silent, args.song, args.out, args.start, args.fps, args.dancer)
+    ani.save(silent, writer=FFMpegWriter(fps=out_fps, bitrate=2400))
+    _finish(ff, silent, args.song, args.out, args.start, out_fps, args.dancer)
     print(f"[OK] wrote {args.out} ({len(dots)} frames)", flush=True)
 
 

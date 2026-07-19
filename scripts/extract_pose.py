@@ -44,6 +44,7 @@ def detect(frames):
     pose = mp.solutions.pose.Pose(static_image_mode=False, model_complexity=2)
     F = len(frames)
     xy = np.full((F, N_LANDMARKS, 2), np.nan)
+    xyz = np.full((F, N_LANDMARKS, 3), np.nan)   # 3D world landmarks (metres, hip origin)
     vis = np.zeros((F, N_LANDMARKS))
     for i, fr in enumerate(frames):
         res = pose.process(np.ascontiguousarray(fr))
@@ -51,8 +52,11 @@ def detect(frames):
             for k, lm in enumerate(res.pose_landmarks.landmark):
                 xy[i, k] = [lm.x, lm.y]
                 vis[i, k] = lm.visibility
+        if res.pose_world_landmarks:
+            for k, lm in enumerate(res.pose_world_landmarks.landmark):
+                xyz[i, k] = [lm.x, lm.y, lm.z]
     pose.close()
-    return xy, vis
+    return xy, xyz, vis
 
 
 def main():
@@ -65,9 +69,9 @@ def main():
     print(f"[read] {args.video}", flush=True)
     frames, fps = read_frames(args.video, args.max_frames)
     print(f"[detect] {len(frames)} frames @ {fps:.2f} fps", flush=True)
-    xy, vis = detect(frames)
+    xy, xyz, vis = detect(frames)
     gray = np.stack([_resize_gray(f) for f in frames]) if frames else np.zeros((0,) + GRAY_HW)
-    np.savez_compressed(args.out, xy=xy, visible=vis, fps=fps, gray=gray)
+    np.savez_compressed(args.out, xy=xy, xyz=xyz, visible=vis, fps=fps, gray=gray)
     detected = int((~np.isnan(xy[:, 0, 0])).sum())
     print(f"[OK] wrote {args.out}: {len(frames)} frames, pose found in {detected}", flush=True)
 

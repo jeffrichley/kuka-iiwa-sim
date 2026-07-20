@@ -17,7 +17,6 @@ import numpy as np
 
 USD = "assets/usd/iiwa7_r800.usd"
 ARM_OFFSET = 0.55          # half the distance between the two bases (metres)
-CAPTURE_EVERY = 2          # 60 Hz sim / 2 -> 30 fps
 
 
 def _build_arm(prim_path, pos):
@@ -75,7 +74,8 @@ def main():
     n = len(qr)
     if args.seconds is not None:
         n = min(n, int(args.seconds * sim_fps))
-    print(f"[render] {n} sim frames @ {sim_fps:.0f}fps", flush=True)
+    cap = max(1, int(round(sim_fps / 30.0)))       # capture -> ~30 fps output
+    print(f"[render] {n} sim frames @ {sim_fps:.0f}fps, capture every {cap}", flush=True)
 
     from kuka_sim.sim_app import launch
     from kuka_sim.camera import SceneCamera
@@ -103,12 +103,12 @@ def main():
         arm_r.write_data_to_sim(); arm_l.write_data_to_sim()
         sim.step()
         arm_r.update(1.0 / sim_fps); arm_l.update(1.0 / sim_fps)
-        if i % CAPTURE_EVERY == 0:
+        if i % cap == 0:
             cam.update()
             frames.append(cam.capture())
 
     print(f"[render] captured {len(frames)} frames; encoding", flush=True)
-    record(frames, args.out, fps=int(round(sim_fps / CAPTURE_EVERY)),
+    record(frames, args.out, fps=int(round(sim_fps / cap)),
            audio_path=args.clip, pip_video_path=args.clip)
     print(f"[OK] wrote {args.out}", flush=True)
 

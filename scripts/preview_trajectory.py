@@ -84,15 +84,27 @@ def ik_joint_positions(ee_pos):
 
 
 def fk_joint_positions(q7):
-    """(F,7) iiwa joint angles -> (F, n_links, 3) link-frame positions for drawing.
+    """(F,7) iiwa joint angles -> link positions (F,L,3) + flange transforms (F,4,4).
     The chain is [base(fixed), A1..A7, ee(fixed)], so pad each side with 0."""
     chain = Chain.from_urdf_file(URDF, base_elements=["lbr_link_0"])
-    dots = []
+    dots, flanges = [], []
     for q in q7:
         q_full = np.concatenate([[0.0], q, [0.0]])          # base + 7 + ee
         fk = chain.forward_kinematics(q_full, full_kinematics=True)
         dots.append(np.array([T[:3, 3] for T in fk]))
-    return np.array(dots)
+        flanges.append(fk[-1])
+    return np.array(dots), np.array(flanges)
+
+
+def _hand_lines(flange_T):
+    """4 finger segments (along approach) + 1 thumb (palm axis) at the flange."""
+    ee = flange_T[:3, 3]; approach = flange_T[:3, 2]; palm_x = flange_T[:3, 0]
+    segs = []
+    for s in (-1.5, -0.5, 0.5, 1.5):
+        base = ee + palm_x * (s * 0.02)
+        segs.append((base, base + approach * 0.09))
+    segs.append((ee, ee + palm_x * 0.06 + approach * 0.03))   # thumb (last)
+    return segs
 
 
 def _smooth_q(q, win):
@@ -150,7 +162,7 @@ def main():
             xyz = xyz[:int(args.seconds * out_fps)]
         q = mimic_joint_traj(xyz, side=args.side)
         q = _smooth_q(q, max(1, int(round(out_fps * 0.15))))     # ~150 ms
-        dots = fk_joint_positions(q)
+        dots, flanges = fk_joint_positions(q)
         label = f"mimic:{args.side}"
     else:
         if args.mode == "music":
@@ -165,6 +177,7 @@ def main():
         ee = smooth_and_limit(ee, DT, max_speed=args.max_speed)
         step = max(1, int(round(1.0 / DT / args.fps)))   # 120Hz -> fps
         dots = ik_joint_positions(ee[::step])            # (F, L, 3)
+        flanges = None
         out_fps = float(args.fps)
 
     tip = dots[:, -1]
@@ -191,6 +204,9 @@ def main():
     link_line, = ax.plot([], [], [], "-o", color="tab:blue", lw=3, ms=5, mfc="white")
     ee_dot, = ax.plot([], [], [], "o", color="crimson", ms=8)
     trail, = ax.plot([], [], [], "-", color="crimson", lw=1, alpha=0.5)
+    # oriented hand: 4 fingers (crimson) + thumb (orange) when we have flanges
+    hand_lines = ([ax.plot([], [], [], color="crimson", lw=2)[0] for _ in range(4)]
+                  + [ax.plot([], [], [], color="darkorange", lw=3)[0]]) if flanges is not None else []
     title = ax.set_title("")
 
     def update(i):
@@ -200,6 +216,9 @@ def main():
         lo = max(0, i - 30)
         tp = dots[lo:i + 1, -1]
         trail.set_data(tp[:, 0], tp[:, 1]); trail.set_3d_properties(tp[:, 2])
+        if flanges is not None:
+            for ln, (a, b) in zip(hand_lines, _hand_lines(flanges[i])):
+                ln.set_data([a[0], b[0]], [a[1], b[1]]); ln.set_3d_properties([a[2], b[2]])
         title.set_text(f"{args.mode}:{label}  frame {i}/{len(dots)}")
         return link_line, ee_dot, trail, title
 

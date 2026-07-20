@@ -75,8 +75,9 @@ def mimic_joint_traj(xyz, side="right", gains=None):
     sh_i, el_i, wr_i = _arm_indices(side)
     xyz = np.asarray(xyz, float)
     F = len(xyz)
+    hand_i = (18, 20) if side == "right" else (17, 19)   # pinky, index (fingertips)
     twist = np.zeros(F); sagittal = np.zeros(F); side_bend = np.zeros(F)
-    upper_ang = np.zeros(F); flex = np.zeros(F)
+    upper_ang = np.zeros(F); fore_ang = np.zeros(F)
     for i in range(F):
         p = xyz[i]
         up, across, facing = _torso_frame(p)
@@ -84,21 +85,23 @@ def mimic_joint_traj(xyz, side="right", gains=None):
         # twist = how far the shoulder line rotates OUT of the image plane (~0 frontal)
         twist[i] = np.arcsin(np.clip(across @ Z_AXIS, -1.0, 1.0))
         sagittal[i] = np.arctan2(up @ Z_AXIS, up @ WORLD_UP)  # torso fold (sagittal)
-        # arm frontal-plane angle RELATIVE to torso (0 = along spine, +-pi = down)
+        # frontal-plane angles RELATIVE to torso (0 = along spine, +-pi = down)
         upper = p[el_i] - p[sh_i]
-        fore = p[wr_i] - p[el_i]
+        hand_pt = (p[hand_i[0]] + p[hand_i[1]]) / 2.0       # fingertip midpoint
+        fore = hand_pt - p[el_i]                            # elbow -> hand (forearm+hand)
         upper_ang[i] = _frontal(upper, across, up)
-        flex[i] = _angle(upper, fore)                       # elbow: 0 straight .. pi folded
+        fore_ang[i] = _frontal(fore, across, up)
 
-    # Unwrap the atan2-based angles over TIME so a limb sweeping through the
-    # +-pi boundary doesn't snap 360deg (the "smooth then jump" artifact).
+    # Unwrap the atan2 angles over TIME so a limb sweeping through the +-pi
+    # boundary doesn't snap 360deg (the "smooth then jump" artifact).
     upper_ang = np.unwrap(upper_ang)
+    fore_ang = np.unwrap(fore_ang)
     sagittal = np.unwrap(sagittal)
 
     q = np.zeros((F, 7))
-    q[:, 0] = g["a1_twist"] * twist       # base yaw   <- torso twist
-    q[:, 1] = g["a2_fold"] * sagittal     # base fold  <- torso bow (the lean)
-    q[:, 2] = g["a3_bend"] * side_bend    # base roll  <- torso side-lean
-    q[:, 3] = g["a4_gain"] * upper_ang    # shoulder   <- arm lift rel. torso
-    q[:, 5] = g["a6_gain"] * flex         # elbow      <- her elbow flexion
+    q[:, 0] = g["a1_twist"] * twist                 # base yaw <- torso twist
+    q[:, 1] = g["a2_fold"] * sagittal               # base fold <- torso bow
+    q[:, 2] = g["a3_bend"] * side_bend              # base roll <- torso side-lean
+    q[:, 3] = g["a4_gain"] * upper_ang              # shoulder <- upper-arm direction
+    q[:, 5] = g["a6_gain"] * (fore_ang - upper_ang)  # elbow/wrist <- forearm+hand points where hers does
     return np.clip(q, -IIWA_LIMITS, IIWA_LIMITS)

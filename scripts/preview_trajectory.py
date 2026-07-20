@@ -40,6 +40,10 @@ DT = 1.0 / 120.0
 BOX_CENTER = np.array([0.5, 0.0, 0.7])
 BOX_HALF = np.array([0.12, 0.18, 0.15])
 
+# colored chain segments (must match render_pose_still): torso/upper/fore/hand,
+# ~2 robot links each (chain dots 0 base..8 flange).
+ROBOT_SEGMENTS = [(0, 2, "#d62728"), (2, 4, "#1f77b4"), (4, 6, "#2ca02c"), (6, 8, "#ff7f0e")]
+
 
 def build_music_traj(song, style, camera):
     from kuka_sim.dance.music.features import analyze
@@ -201,18 +205,19 @@ def main():
         for a, b in _box_edges(BOX_CENTER, BOX_HALF):
             ax.plot(*zip(a, b), color="tab:orange", lw=0.6, alpha=0.5)
 
-    link_line, = ax.plot([], [], [], "-o", color="tab:blue", lw=3, ms=5, mfc="white")
-    ee_dot, = ax.plot([], [], [], "o", color="crimson", ms=8)
-    trail, = ax.plot([], [], [], "-", color="crimson", lw=1, alpha=0.5)
-    # oriented hand: 4 fingers (crimson) + thumb (orange) when we have flanges
-    hand_lines = ([ax.plot([], [], [], color="crimson", lw=2)[0] for _ in range(4)]
+    ax.plot([], [], [], "-", color="0.75", lw=1)                 # (faint backbone, static)
+    # colored chain segments (torso/upper/fore/hand) matching the stills
+    seg_lines = [ax.plot([], [], [], "-o", color=c, lw=4, ms=5, mfc="white")[0]
+                 for _, _, c in ROBOT_SEGMENTS]
+    trail, = ax.plot([], [], [], "-", color="0.4", lw=1, alpha=0.4)
+    hand_lines = ([ax.plot([], [], [], color="#ff7f0e", lw=2)[0] for _ in range(4)]
                   + [ax.plot([], [], [], color="darkorange", lw=3)[0]]) if flanges is not None else []
     title = ax.set_title("")
 
     def update(i):
         d = dots[i]
-        link_line.set_data(d[:, 0], d[:, 1]); link_line.set_3d_properties(d[:, 2])
-        ee_dot.set_data([d[-1, 0]], [d[-1, 1]]); ee_dot.set_3d_properties([d[-1, 2]])
+        for ln, (s, e, _) in zip(seg_lines, ROBOT_SEGMENTS):
+            ln.set_data(d[s:e + 1, 0], d[s:e + 1, 1]); ln.set_3d_properties(d[s:e + 1, 2])
         lo = max(0, i - 30)
         tp = dots[lo:i + 1, -1]
         trail.set_data(tp[:, 0], tp[:, 1]); trail.set_3d_properties(tp[:, 2])
@@ -220,7 +225,7 @@ def main():
             for ln, (a, b) in zip(hand_lines, _hand_lines(flanges[i])):
                 ln.set_data([a[0], b[0]], [a[1], b[1]]); ln.set_3d_properties([a[2], b[2]])
         title.set_text(f"{args.mode}:{label}  frame {i}/{len(dots)}")
-        return link_line, ee_dot, trail, title
+        return (*seg_lines, trail, title)
 
     ani = FuncAnimation(fig, update, frames=len(dots), interval=1000 / out_fps, blit=False)
     ff = imageio_ffmpeg.get_ffmpeg_exe()

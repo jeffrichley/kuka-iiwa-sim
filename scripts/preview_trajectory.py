@@ -166,8 +166,10 @@ def main():
             xyz = xyz[:int(args.seconds * out_fps)]
         win = max(1, int(round(out_fps * 0.15)))                 # ~150 ms
         base_off = 0.35                                          # half shoulder width
-        sides = [("right", np.array([0., -base_off, 0.])),
-                 ("left", np.array([0., base_off, 0.]))] if args.side == "both" \
+        # mount each arm on the side its hand extends to (her right hand goes to
+        # image-left = +y here), so extended arms don't cross.
+        sides = [("right", np.array([0., base_off, 0.])),
+                 ("left", np.array([0., -base_off, 0.]))] if args.side == "both" \
             else [(args.side, np.zeros(3))]
         arms = []
         for sd, off in sides:

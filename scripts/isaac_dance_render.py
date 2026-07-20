@@ -35,6 +35,27 @@ def _build_arm(prim_path, pos):
     return Articulation(cfg)
 
 
+def _spawn_frustum(prim_path, pos, top=0.30, bottom=0.60, height=BASE_Z,
+                   color=(0.06, 0.06, 0.07)):
+    """A truncated square pyramid (frustum) plinth: top ~arm-base sized, flaring
+    to a wider bottom. Built as a USD mesh (Isaac has no pyramid primitive)."""
+    import omni.usd
+    from pxr import UsdGeom, Gf
+    stage = omni.usd.get_context().get_stage()
+    mesh = UsdGeom.Mesh.Define(stage, prim_path)
+    t, b = top / 2.0, bottom / 2.0
+    pts = [(-b, -b, 0), (b, -b, 0), (b, b, 0), (-b, b, 0),           # bottom (wide)
+           (-t, -t, height), (t, -t, height), (t, t, height), (-t, t, height)]  # top (narrow)
+    mesh.CreatePointsAttr([Gf.Vec3f(*p) for p in pts])
+    mesh.CreateFaceVertexCountsAttr([4, 4, 4, 4, 4, 4])
+    mesh.CreateFaceVertexIndicesAttr(
+        [0, 3, 2, 1, 4, 5, 6, 7, 0, 1, 5, 4, 1, 2, 6, 5, 2, 3, 7, 6, 3, 0, 4, 7])
+    mesh.CreateSubdivisionSchemeAttr("none")
+    mesh.CreateDisplayColorAttr([Gf.Vec3f(*color)])
+    UsdGeom.XformCommonAPI(mesh).SetTranslate(Gf.Vec3d(*pos))
+    return mesh
+
+
 def _build_stage():
     import isaaclab.sim as sim_utils
     # dark glossy floor (reads as a reflective stage)
@@ -45,15 +66,9 @@ def _build_stage():
         collision_props=sim_utils.CollisionPropertiesCfg(),
     )
     floor.func("/World/floor", floor, translation=(0.0, 0.0, -0.05))
-    # two plinths the arms stand on
-    ped = sim_utils.CuboidCfg(
-        size=(0.5, 0.5, BASE_Z),
-        visual_material=sim_utils.PreviewSurfaceCfg(
-            diffuse_color=(0.06, 0.06, 0.07), roughness=0.4, metallic=0.2),
-        collision_props=sim_utils.CollisionPropertiesCfg(),
-    )
-    ped.func("/World/pedR", ped, translation=(0.0, ARM_OFFSET, BASE_Z / 2))
-    ped.func("/World/pedL", ped, translation=(0.0, -ARM_OFFSET, BASE_Z / 2))
+    # two tapered pyramid plinths the arms stand on
+    _spawn_frustum("/World/pedR", (0.0, ARM_OFFSET, 0.0))
+    _spawn_frustum("/World/pedL", (0.0, -ARM_OFFSET, 0.0))
     # dim cool ambient so the surround stays dark
     dome = sim_utils.DomeLightCfg(intensity=90.0, color=(0.15, 0.17, 0.25))
     dome.func("/World/dome", dome)

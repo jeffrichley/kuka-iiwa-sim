@@ -16,7 +16,7 @@ import os
 import numpy as np
 
 USD = "assets/usd/iiwa7_r800.usd"
-ARM_OFFSET = 0.65          # half the distance between the two bases (metres)
+ARM_OFFSET = 0.55          # half the distance between the two bases (metres)
 CAPTURE_EVERY = 2          # 60 Hz sim / 2 -> 30 fps
 
 
@@ -53,8 +53,8 @@ def _build_stage():
                                     color=(1.0, 0.93, 0.8))
     spot.func("/World/spot", spot, translation=(0.6, 0.0, 2.4))
     # front fill (camera side) so the arms' faces read
-    fill = sim_utils.SphereLightCfg(intensity=70000.0, radius=0.4, color=(0.9, 0.92, 1.0))
-    fill.func("/World/fill", fill, translation=(2.2, 0.8, 1.6))
+    fill = sim_utils.SphereLightCfg(intensity=120000.0, radius=0.4, color=(0.9, 0.92, 1.0))
+    fill.func("/World/fill", fill, translation=(2.0, 0.6, 1.5))
     # blue rim from behind for separation from the dark
     rim = sim_utils.SphereLightCfg(intensity=45000.0, radius=0.3, color=(0.35, 0.5, 1.0))
     rim.func("/World/rim", rim, translation=(-1.8, 0.0, 1.8))
@@ -86,7 +86,7 @@ def main():
     _build_stage()
     arm_r = _build_arm("/World/RobotR", (0.0, -ARM_OFFSET, 0.0))
     arm_l = _build_arm("/World/RobotL", (0.0, ARM_OFFSET, 0.0))
-    cam = SceneCamera(pos=(2.4, 0.85, 1.0), target=(0.0, 0.0, 0.75),
+    cam = SceneCamera(pos=(3.7, 0.4, 1.5), target=(0.0, 0.0, 0.55),
                       dt=1.0 / sim_fps)
     sim.reset()
     cam.initialize()

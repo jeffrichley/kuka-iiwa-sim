@@ -84,8 +84,10 @@ def main():
 
     app, sim = launch(headless=True, enable_cameras=True, dt=1.0 / sim_fps)
     _build_stage()
-    arm_r = _build_arm("/World/RobotR", (0.0, -ARM_OFFSET, 0.0))
-    arm_l = _build_arm("/World/RobotL", (0.0, ARM_OFFSET, 0.0))
+    # he faces the camera (mirror), so his right arm should read on OUR left.
+    # From the -x camera, +y is image-left -> mount the right arm at +y.
+    arm_r = _build_arm("/World/RobotR", (0.0, ARM_OFFSET, 0.0))
+    arm_l = _build_arm("/World/RobotL", (0.0, -ARM_OFFSET, 0.0))
     # camera on the -x side, matching the approved preview's viewpoint (azim~195)
     # so toward-camera reaches read correctly instead of pointing away.
     cam = SceneCamera(pos=(-3.7, -1.0, 1.35), target=(0.0, 0.0, 0.55),

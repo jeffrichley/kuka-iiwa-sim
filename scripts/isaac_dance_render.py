@@ -17,6 +17,7 @@ import numpy as np
 
 USD = "assets/usd/iiwa7_r800.usd"
 ARM_OFFSET = 0.55          # half the distance between the two bases (metres)
+BASE_Z = 0.9               # pedestal height so downward reaches clear the floor
 
 
 def _build_arm(prim_path, pos):
@@ -44,19 +45,28 @@ def _build_stage():
         collision_props=sim_utils.CollisionPropertiesCfg(),
     )
     floor.func("/World/floor", floor, translation=(0.0, 0.0, -0.05))
+    # two plinths the arms stand on
+    ped = sim_utils.CuboidCfg(
+        size=(0.5, 0.5, BASE_Z),
+        visual_material=sim_utils.PreviewSurfaceCfg(
+            diffuse_color=(0.06, 0.06, 0.07), roughness=0.4, metallic=0.2),
+        collision_props=sim_utils.CollisionPropertiesCfg(),
+    )
+    ped.func("/World/pedR", ped, translation=(0.0, ARM_OFFSET, BASE_Z / 2))
+    ped.func("/World/pedL", ped, translation=(0.0, -ARM_OFFSET, BASE_Z / 2))
     # dim cool ambient so the surround stays dark
     dome = sim_utils.DomeLightCfg(intensity=90.0, color=(0.15, 0.17, 0.25))
     dome.func("/World/dome", dome)
     # warm key "spotlight" tight over the arms
     spot = sim_utils.SphereLightCfg(intensity=350000.0, radius=0.22,
                                     color=(1.0, 0.93, 0.8))
-    spot.func("/World/spot", spot, translation=(0.6, 0.0, 2.4))
+    spot.func("/World/spot", spot, translation=(0.6, 0.0, 3.3))
     # front fill on the camera side (-x now)
     fill = sim_utils.SphereLightCfg(intensity=120000.0, radius=0.4, color=(0.9, 0.92, 1.0))
-    fill.func("/World/fill", fill, translation=(-2.0, -0.7, 1.5))
+    fill.func("/World/fill", fill, translation=(-2.0, -0.7, 2.3))
     # blue rim from behind (opposite the camera, +x) for separation
     rim = sim_utils.SphereLightCfg(intensity=45000.0, radius=0.3, color=(0.35, 0.5, 1.0))
-    rim.func("/World/rim", rim, translation=(1.8, 0.0, 1.8))
+    rim.func("/World/rim", rim, translation=(1.8, 0.0, 2.6))
 
 
 def main():
@@ -86,11 +96,11 @@ def main():
     _build_stage()
     # he faces the camera (mirror), so his right arm should read on OUR left.
     # From the -x camera, +y is image-left -> mount the right arm at +y.
-    arm_r = _build_arm("/World/RobotR", (0.0, ARM_OFFSET, 0.0))
-    arm_l = _build_arm("/World/RobotL", (0.0, -ARM_OFFSET, 0.0))
+    arm_r = _build_arm("/World/RobotR", (0.0, ARM_OFFSET, BASE_Z))
+    arm_l = _build_arm("/World/RobotL", (0.0, -ARM_OFFSET, BASE_Z))
     # camera on the -x side, matching the approved preview's viewpoint (azim~195)
     # so toward-camera reaches read correctly instead of pointing away.
-    cam = SceneCamera(pos=(-3.7, -1.0, 1.35), target=(0.0, 0.0, 0.55),
+    cam = SceneCamera(pos=(-3.9, -1.1, 1.95), target=(0.0, 0.0, 1.25),
                       dt=1.0 / sim_fps)
     sim.reset()
     cam.initialize()

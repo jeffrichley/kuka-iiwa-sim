@@ -25,11 +25,17 @@ from kuka_sim.dance.video.mimic import mimic_joint_traj
 
 URDF = "assets/urdf/lbr_iiwa7_r800_description/iiwa7_r800.urdf"
 
-# MediaPipe skeleton edges (subset that reads clearly) + the arm chains.
+# MediaPipe skeleton edges (subset that reads clearly), drawn faint for context.
 BODY_EDGES = [(11, 12), (11, 23), (12, 24), (23, 24), (11, 13), (13, 15),
               (12, 14), (14, 16), (23, 25), (25, 27), (24, 26), (26, 28),
               (27, 31), (28, 32), (15, 17), (16, 18)]
-ARM_CHAIN = {"right": [(12, 14), (14, 16)], "left": [(11, 13), (13, 15)]}
+
+# Colors for the mapped chain — SAME color on her segment and the robot link it
+# drives, so the correspondence is visible at a glance.
+C_TORSO, C_UPPER, C_FORE, C_HAND = "#d62728", "#1f77b4", "#2ca02c", "#ff7f0e"
+
+# Robot link-dot ranges (chain: 0 base,1..7 A1..A7,8 flange) per body part.
+ROBOT_SEGMENTS = [(0, 3, C_TORSO), (3, 4, C_UPPER), (4, 6, C_FORE), (6, 8, C_HAND)]
 
 
 def _hand_glyph(ax, flange_T):
@@ -82,16 +88,20 @@ def main():
     H, W = img.shape[:2]
     axp.imshow(img); axp.axis("off")
     px, py = xy[:, 0] * W, xy[:, 1] * H
-    for a, b in BODY_EDGES:                                   # full skeleton (green)
-        axp.plot([px[a], px[b]], [py[a], py[b]], color="lime", lw=2, alpha=0.7, zorder=2)
-    for a, b in ARM_CHAIN[args.side]:                        # driving arm (red)
-        axp.plot([px[a], px[b]], [py[a], py[b]], color="red", lw=3.5, zorder=3)
-    # her hand: wrist -> index / pinky / thumb (orange) so its facing is visible
-    wr, idx, pky, thm = (16, 20, 18, 22) if args.side == "right" else (15, 19, 17, 21)
-    for tip in (idx, pky, thm):
-        axp.plot([px[wr], px[tip]], [py[wr], py[tip]], color="darkorange", lw=2.5, zorder=3)
-    axp.scatter(px, py, s=14, c="yellow", edgecolors="black", lw=0.4, zorder=4)
-    axp.set_title(f"photo + pose (red = {args.side} arm, orange = hand)")
+    for a, b in BODY_EDGES:                                   # faint full skeleton (context)
+        axp.plot([px[a], px[b]], [py[a], py[b]], color="0.6", lw=1.2, alpha=0.6, zorder=2)
+    # her mapped chain, colored to match the robot links it drives
+    sh, el, wr = (12, 14, 16) if args.side == "right" else (11, 13, 15)
+    idx, pky = (20, 18) if args.side == "right" else (19, 17)
+    sc = ((px[11] + px[12]) / 2, (py[11] + py[12]) / 2)      # shoulder center
+    hc = ((px[23] + px[24]) / 2, (py[23] + py[24]) / 2)      # hip center
+    hand = ((px[idx] + px[pky]) / 2, (py[idx] + py[pky]) / 2)
+    chain = [((hc, sc), C_TORSO), (((px[sh], py[sh]), (px[el], py[el])), C_UPPER),
+             (((px[el], py[el]), (px[wr], py[wr])), C_FORE),
+             (((px[wr], py[wr]), hand), C_HAND)]
+    for (a, b), c in chain:
+        axp.plot([a[0], b[0]], [a[1], b[1]], color=c, lw=5, solid_capstyle="round", zorder=3)
+    axp.set_title("her chain -> robot (matching colors)")
 
     ax = fig.add_subplot(1, 2, 2, projection="3d")
     allp = dots
@@ -100,7 +110,10 @@ def main():
     ax.set_zlim(min(0, allp[:, 2].min()), max(allp[:, 2].max() * 1.1, rad))
     ax.set_box_aspect((1, 1, 1)); ax.view_init(elev=args.elev, azim=args.azim)
     ax.set_xlabel("x"); ax.set_ylabel("y"); ax.set_zlabel("z")
-    ax.plot(dots[:, 0], dots[:, 1], dots[:, 2], "-o", color="tab:blue", lw=3, ms=6, mfc="white")
+    ax.plot(dots[:, 0], dots[:, 1], dots[:, 2], "-", color="0.75", lw=1.5, zorder=1)
+    for s, e, c in ROBOT_SEGMENTS:                            # colored to match her chain
+        ax.plot(dots[s:e + 1, 0], dots[s:e + 1, 1], dots[s:e + 1, 2],
+                "-o", color=c, lw=4, ms=6, mfc="white", zorder=3)
     _hand_glyph(ax, flange_T)
     ax.set_title(f"robot (mimic:{args.side})")
 

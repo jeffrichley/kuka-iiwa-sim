@@ -181,7 +181,7 @@ def main():
     ax.set_xlim(ctr[0] - rad, ctr[0] + rad)
     ax.set_ylim(ctr[1] - rad, ctr[1] + rad)
     ax.set_zlim(min(0, allpts[:, 2].min()), max(allpts[:, 2].max() * 1.1, rad))
-    ax.set_box_aspect((1, 1, 1)); ax.view_init(elev=18, azim=-60)
+    ax.set_box_aspect((1, 1, 1)); ax.view_init(elev=12, azim=-72)
     ax.set_xlabel("x"); ax.set_ylabel("y"); ax.set_zlabel("z")
 
     if args.mode != "mimic":

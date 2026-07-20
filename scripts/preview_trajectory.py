@@ -141,7 +141,7 @@ def main():
     ap.add_argument("--camera", default="hero")
     ap.add_argument("--poses", default="out/dance_studio_poses.npz")
     ap.add_argument("--scorer", default="energy")
-    ap.add_argument("--side", default="right", choices=["right", "left"])
+    ap.add_argument("--side", default="right", choices=["right", "left", "both"])
     ap.add_argument("--dancer", default=None,
                     help="source dance clip to show side-by-side with the arm")
     ap.add_argument("--start", type=float, default=0.0,
@@ -164,10 +164,18 @@ def main():
         xyz = xyz[s0:]
         if args.seconds is not None:
             xyz = xyz[:int(args.seconds * out_fps)]
-        q = mimic_joint_traj(xyz, side=args.side)
-        q = _smooth_q(q, max(1, int(round(out_fps * 0.15))))     # ~150 ms
-        dots, flanges = fk_joint_positions(q)
-        label = f"mimic:{args.side}"
+        win = max(1, int(round(out_fps * 0.15)))                 # ~150 ms
+        base_off = 0.35                                          # half shoulder width
+        sides = [("right", np.array([0., -base_off, 0.])),
+                 ("left", np.array([0., base_off, 0.]))] if args.side == "both" \
+            else [(args.side, np.zeros(3))]
+        arms = []
+        for sd, off in sides:
+            q = _smooth_q(mimic_joint_traj(xyz, side=sd), win)
+            dd, ff = fk_joint_positions(q)
+            ff = ff.copy(); ff[:, :3, 3] += off                  # offset flange origin
+            arms.append((dd + off, ff))
+        label = args.side
     else:
         if args.mode == "music":
             traj = build_music_traj(args.song, args.style, args.camera)
@@ -180,19 +188,19 @@ def main():
             ee = ee[:int(args.seconds / DT)]
         ee = smooth_and_limit(ee, DT, max_speed=args.max_speed)
         step = max(1, int(round(1.0 / DT / args.fps)))   # 120Hz -> fps
-        dots = ik_joint_positions(ee[::step])            # (F, L, 3)
-        flanges = None
+        arms = [(ik_joint_positions(ee[::step]), None)]  # (F, L, 3)
         out_fps = float(args.fps)
 
+    dots = arms[0][0]                                     # reference (frame count, limits)
     tip = dots[:, -1]
     travel = (tip.max(0) - tip.min(0)) * 100
-    print(f"[preview] {len(dots)} frames @ {out_fps:.0f}fps; flange travel cm "
-          f"x={travel[0]:.1f} y={travel[1]:.1f} z={travel[2]:.1f}", flush=True)
+    print(f"[preview] {len(dots)} frames @ {out_fps:.0f}fps ({len(arms)} arm(s)); "
+          f"flange travel cm x={travel[0]:.1f} y={travel[1]:.1f} z={travel[2]:.1f}", flush=True)
 
     fig = plt.figure(figsize=(6, 6), dpi=100)   # -> 600x600, known for side-by-side
     ax = fig.add_subplot(111, projection="3d")
-    # frame the arm from its actual reach (mimic swings much wider than the box)
-    allpts = dots.reshape(-1, 3)
+    # frame from every arm's actual reach
+    allpts = np.concatenate([a[0].reshape(-1, 3) for a in arms])
     ctr = allpts.mean(0)
     rad = max(0.5, float(np.abs(allpts - ctr).max()) * 1.1)
     ax.set_xlim(ctr[0] - rad, ctr[0] + rad)
@@ -205,27 +213,28 @@ def main():
         for a, b in _box_edges(BOX_CENTER, BOX_HALF):
             ax.plot(*zip(a, b), color="tab:orange", lw=0.6, alpha=0.5)
 
-    ax.plot([], [], [], "-", color="0.75", lw=1)                 # (faint backbone, static)
-    # colored chain segments (torso/upper/fore/hand) matching the stills
-    seg_lines = [ax.plot([], [], [], "-o", color=c, lw=4, ms=5, mfc="white")[0]
-                 for _, _, c in ROBOT_SEGMENTS]
-    trail, = ax.plot([], [], [], "-", color="0.4", lw=1, alpha=0.4)
-    hand_lines = ([ax.plot([], [], [], color="#ff7f0e", lw=2)[0] for _ in range(4)]
-                  + [ax.plot([], [], [], color="darkorange", lw=3)[0]]) if flanges is not None else []
+    # per-arm line artists: colored segments + (optional) oriented hand
+    arts = []
+    for dd, ff in arms:
+        segs = [ax.plot([], [], [], "-o", color=c, lw=4, ms=5, mfc="white")[0]
+                for _, _, c in ROBOT_SEGMENTS]
+        hands = ([ax.plot([], [], [], color="#ff7f0e", lw=2)[0] for _ in range(4)]
+                 + [ax.plot([], [], [], color="darkorange", lw=3)[0]]) if ff is not None else []
+        arts.append((segs, hands))
     title = ax.set_title("")
 
     def update(i):
-        d = dots[i]
-        for ln, (s, e, _) in zip(seg_lines, ROBOT_SEGMENTS):
-            ln.set_data(d[s:e + 1, 0], d[s:e + 1, 1]); ln.set_3d_properties(d[s:e + 1, 2])
-        lo = max(0, i - 30)
-        tp = dots[lo:i + 1, -1]
-        trail.set_data(tp[:, 0], tp[:, 1]); trail.set_3d_properties(tp[:, 2])
-        if flanges is not None:
-            for ln, (a, b) in zip(hand_lines, _hand_lines(flanges[i])):
-                ln.set_data([a[0], b[0]], [a[1], b[1]]); ln.set_3d_properties([a[2], b[2]])
+        drawn = []
+        for (dd, ff), (segs, hands) in zip(arms, arts):
+            d = dd[i]
+            for ln, (s, e, _) in zip(segs, ROBOT_SEGMENTS):
+                ln.set_data(d[s:e + 1, 0], d[s:e + 1, 1]); ln.set_3d_properties(d[s:e + 1, 2])
+            if ff is not None:
+                for ln, (a, b) in zip(hands, _hand_lines(ff[i])):
+                    ln.set_data([a[0], b[0]], [a[1], b[1]]); ln.set_3d_properties([a[2], b[2]])
+            drawn += segs + hands
         title.set_text(f"{args.mode}:{label}  frame {i}/{len(dots)}")
-        return (*seg_lines, trail, title)
+        return (*drawn, title)
 
     ani = FuncAnimation(fig, update, frames=len(dots), interval=1000 / out_fps, blit=False)
     ff = imageio_ffmpeg.get_ffmpeg_exe()

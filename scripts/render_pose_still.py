@@ -34,8 +34,9 @@ BODY_EDGES = [(11, 12), (11, 23), (12, 24), (23, 24), (11, 13), (13, 15),
 # drives, so the correspondence is visible at a glance.
 C_TORSO, C_UPPER, C_FORE, C_HAND = "#d62728", "#1f77b4", "#2ca02c", "#ff7f0e"
 
-# Robot link-dot ranges (chain: 0 base,1..7 A1..A7,8 flange) per body part.
-ROBOT_SEGMENTS = [(0, 3, C_TORSO), (3, 4, C_UPPER), (4, 6, C_FORE), (6, 8, C_HAND)]
+# Robot link-dot ranges (chain: 0 base,1..7 A1..A7,8 flange). ~2 links per body
+# segment: torso=base..A2, upper arm=A2..A4, forearm=A4..A6, hand=A6..flange.
+ROBOT_SEGMENTS = [(0, 2, C_TORSO), (2, 4, C_UPPER), (4, 6, C_FORE), (6, 8, C_HAND)]
 
 
 def _hand_glyph(ax, flange_T):

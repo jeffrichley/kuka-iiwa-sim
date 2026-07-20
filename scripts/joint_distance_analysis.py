@@ -29,7 +29,7 @@ from matplotlib.animation import FuncAnimation, FFMpegWriter
 import imageio_ffmpeg
 from ikpy.chain import Chain
 
-from kuka_sim.dance.video.mimic import mimic_joint_traj
+from kuka_sim.dance.video.mimic import mimic_joint_traj, _to_robot
 
 URDF = "assets/urdf/lbr_iiwa7_r800_description/iiwa7_r800.urdf"
 ROBOT_JOINTS = [2, 4, 6, 8]       # FK dots: shoulder, elbow, wrist, hand
@@ -63,8 +63,9 @@ def human_chain(xyz, side):
     out = []
     for p in xyz:
         hand = (p[idx] + p[pky]) / 2.0
-        # world (x right, y DOWN, z toward cam) -> display (X right, Y depth, Z up)
-        H = np.array([[v[0], v[2], -v[1]] for v in (p[sh], p[el], p[wr], hand)])
+        # convert to the ROBOT frame (same rotation the mapping targets) so the
+        # comparison is apples-to-apples.
+        H = np.array([_to_robot(v) for v in (p[sh], p[el], p[wr], hand)])
         out.append(_norm_chain(H))
     return np.array(out)
 

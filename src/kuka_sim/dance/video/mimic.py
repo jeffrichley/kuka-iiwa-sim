@@ -1,49 +1,28 @@
-"""Retarget a human upper body onto the iiwa's joints so the robot *mimics* her:
-her torso lean/bend/twist drives the base joints, her arm (measured RELATIVE to
-the torso) drives the upper joints, and her elbow/wrist drive the tip. This
-"unrolls" her waist->hand chain onto the robot's base->tool chain.
+"""Retarget a human arm onto the iiwa in FULL 3D: make the robot's three arm
+segments (upper arm, forearm, hand) point along HER segments' actual 3D
+directions -- depth included, not just the frontal plane.
+
+Rather than hand-derive inverse kinematics for the real link geometry, we solve
+against the actual robot forward kinematics: for each frame, find the 7 joint
+angles that make the robot's segment directions match hers (least-squares,
+warm-started from the previous frame, bounded by the joint limits).
 
 Input: MediaPipe world landmarks (F, 33, 3), metres, hip origin.
 World frame (verified): +x = her right, +y = DOWN, +z = toward camera.
-Output: (F, 7) iiwa joint angles A1..A7 (radians), clamped to limits.
-
-Signs/gains are tuned pose-by-pose against the still renderer; every value here
-is a knob in DEFAULT_GAINS.
+Output: (F, 7) iiwa joint angles A1..A7 (radians), within limits.
 """
+import os
 import numpy as np
 
-# MediaPipe Pose landmark indices
 R_SHOULDER, R_ELBOW, R_WRIST = 12, 14, 16
 L_SHOULDER, L_ELBOW, L_WRIST = 11, 13, 15
-R_HIP, L_HIP = 24, 23
 
 IIWA_LIMITS = np.deg2rad([170.0, 120.0, 170.0, 120.0, 170.0, 120.0, 175.0])
 
-X_AXIS = np.array([1.0, 0.0, 0.0])    # image left/right
-Z_AXIS = np.array([0.0, 0.0, 1.0])    # toward camera
-WORLD_UP = np.array([0.0, -1.0, 0.0])  # +y is down, so up is -y
-
-DEFAULT_GAINS = dict(
-    # Anatomical: the 3 bend joints map to shoulder / elbow / wrist, each segment
-    # pointing where hers points (frontal-plane angle). The torso's twist & side-
-    # lean take the roll joints; its forward-lean merges into the shoulder.
-    a1_twist=1.2,     # A1 roll  <- torso twist
-    a2_gain=1.0,      # A2 bend  <- shoulder: upper-arm angle from vertical
-    a3_bend=1.6,      # A3 roll  <- torso side-lean
-    a4_gain=-1.0,     # A4 bend  <- elbow: forearm angle change (neg: -y axis)
-    a6_gain=-1.0,     # A6 bend  <- wrist: hand angle change
-)
-
-
-def _frontal_world(v):
-    """Angle of v in the image/frontal plane: 0 = up, +pi/2 = image-right, +-pi = down."""
-    return float(np.arctan2(v @ X_AXIS, v @ WORLD_UP))
-
-
-def _frontal(v, across, up):
-    """Signed angle of v in the torso frontal plane: 0 = up the spine,
-    +pi/2 = out to her right (across), -pi/2 = her left, +-pi = down."""
-    return float(np.arctan2(v @ across, v @ up))
+# chain FK dots (0 base, 1..7 A1..A7, 8 flange); arm segments between these:
+_SEG = [(2, 4), (4, 6), (6, 8)]          # upper arm, forearm, hand
+_URDF = os.path.join("assets", "urdf", "lbr_iiwa7_r800_description", "iiwa7_r800.urdf")
+_CHAIN = None
 
 
 def _unit(v):
@@ -51,60 +30,57 @@ def _unit(v):
     return v / n if n > 1e-9 else v
 
 
-def _angle(a, b):
-    return float(np.arccos(np.clip(_unit(a) @ _unit(b), -1.0, 1.0)))
-
-
 def _arm_indices(side):
     if side == "right":
-        return R_SHOULDER, R_ELBOW, R_WRIST
+        return R_SHOULDER, R_ELBOW, R_WRIST, (18, 20)   # +pinky, index
     if side == "left":
-        return L_SHOULDER, L_ELBOW, L_WRIST
+        return L_SHOULDER, L_ELBOW, L_WRIST, (17, 19)
     raise ValueError(f"side must be 'right' or 'left', got {side!r}")
 
 
-def _torso_frame(p):
-    """Orthonormal torso frame from the 4-point box: (up, across, facing)."""
-    sh_c = (p[L_SHOULDER] + p[R_SHOULDER]) / 2.0
-    hip_c = (p[L_HIP] + p[R_HIP]) / 2.0
-    up = _unit(sh_c - hip_c)                    # spine, points toward head
-    across = _unit(p[R_SHOULDER] - p[L_SHOULDER])   # shoulder line, toward her right
-    facing = _unit(np.cross(up, across))        # box normal, toward camera (neutral)
-    across = _unit(np.cross(facing, up))        # re-orthogonalize
-    return up, across, facing
+def _to_robot(v):
+    """Her world dir (x right, y DOWN, z toward cam) -> robot dir (x fwd, y left,
+    z up): up = -y, forward = +z (toward camera), left = -x."""
+    return np.array([v[2], -v[0], -v[1]])
+
+
+def _chain():
+    global _CHAIN
+    if _CHAIN is None:
+        from ikpy.chain import Chain
+        _CHAIN = Chain.from_urdf_file(_URDF, base_elements=["lbr_link_0"])
+    return _CHAIN
+
+
+def _seg_dirs(q7, chain):
+    fk = chain.forward_kinematics(np.concatenate([[0.0], q7, [0.0]]),
+                                  full_kinematics=True)
+    d = np.array([T[:3, 3] for T in fk])
+    return [_unit(d[b] - d[a]) for a, b in _SEG]
 
 
 def mimic_joint_traj(xyz, side="right", gains=None):
-    """(F,33,3) world landmarks -> (F,7) iiwa joint angles (torso-rooted chain)."""
-    g = {**DEFAULT_GAINS, **(gains or {})}
-    sh_i, el_i, wr_i = _arm_indices(side)
+    """(F,33,3) world landmarks -> (F,7) iiwa joint angles matching her arm in 3D."""
+    from scipy.optimize import least_squares
+    sh_i, el_i, wr_i, hand_i = _arm_indices(side)
+    chain = _chain()
     xyz = np.asarray(xyz, float)
     F = len(xyz)
-    hand_i = (18, 20) if side == "right" else (17, 19)   # pinky, index (fingertips)
-    twist = np.zeros(F); side_bend = np.zeros(F)
-    upper_ang = np.zeros(F); fore_ang = np.zeros(F); hand_ang = np.zeros(F)
+    q = np.zeros((F, 7))
+    q_prev = np.zeros(7)
     for i in range(F):
         p = xyz[i]
-        up, across, facing = _torso_frame(p)
-        side_bend[i] = up @ X_AXIS                          # spine tilts along image-x
-        twist[i] = np.arcsin(np.clip(across @ Z_AXIS, -1.0, 1.0))  # torso twist (~0 frontal)
-        # each segment's angle in the image/frontal plane (world-referenced, so
-        # the shoulder/elbow/wrist bends match what the viewer sees)
-        sh, el, wr = p[sh_i], p[el_i], p[wr_i]
         hand_pt = (p[hand_i[0]] + p[hand_i[1]]) / 2.0
-        upper_ang[i] = _frontal_world(el - sh)              # upper arm
-        fore_ang[i] = _frontal_world(wr - el)               # forearm
-        hand_ang[i] = _frontal_world(hand_pt - wr)          # hand
+        targets = [_to_robot(_unit(p[el_i] - p[sh_i])),
+                   _to_robot(_unit(p[wr_i] - p[el_i])),
+                   _to_robot(_unit(hand_pt - p[wr_i]))]
 
-    # Unwrap over TIME so a segment sweeping through +-pi doesn't snap 360deg.
-    upper_ang = np.unwrap(upper_ang)
-    fore_ang = np.unwrap(fore_ang)
-    hand_ang = np.unwrap(hand_ang)
+        def resid(qq):
+            dirs = _seg_dirs(qq, chain)
+            return np.concatenate([dirs[j] - targets[j] for j in range(3)])
 
-    q = np.zeros((F, 7))
-    q[:, 0] = g["a1_twist"] * twist                    # A1 <- torso twist
-    q[:, 1] = g["a2_gain"] * upper_ang                 # A2 shoulder <- upper-arm angle
-    q[:, 2] = g["a3_bend"] * side_bend                 # A3 <- torso side-lean
-    q[:, 3] = g["a4_gain"] * (fore_ang - upper_ang)    # A4 elbow  <- forearm turns off upper arm
-    q[:, 5] = g["a6_gain"] * (hand_ang - fore_ang)     # A6 wrist  <- hand turns off forearm
-    return np.clip(q, -IIWA_LIMITS, IIWA_LIMITS)
+        sol = least_squares(resid, q_prev, bounds=(-IIWA_LIMITS, IIWA_LIMITS),
+                            method="trf", max_nfev=60, xtol=1e-3, ftol=1e-3)
+        q[i] = sol.x
+        q_prev = sol.x
+    return q

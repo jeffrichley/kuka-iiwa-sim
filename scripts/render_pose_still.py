@@ -68,7 +68,7 @@ def main():
     ap.add_argument("--pose", required=True, help=".npz from extract_pose --image")
     ap.add_argument("--photo", required=True)
     ap.add_argument("--side", default="right", choices=["right", "left"])
-    ap.add_argument("--azim", type=float, default=-72.0)   # near-front, but 3/4 enough to show the torso fold
+    ap.add_argument("--azim", type=float, default=180.0)   # aligns the robot frame with her front-on photo
     ap.add_argument("--elev", type=float, default=12.0)
     ap.add_argument("--out", required=True)
     args = ap.parse_args()

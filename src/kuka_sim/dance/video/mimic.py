@@ -75,33 +75,30 @@ def mimic_joint_traj(xyz, side="right", gains=None):
     sh_i, el_i, wr_i = _arm_indices(side)
     xyz = np.asarray(xyz, float)
     F = len(xyz)
-    q = np.zeros((F, 7))
+    twist = np.zeros(F); sagittal = np.zeros(F); side_bend = np.zeros(F)
+    upper_ang = np.zeros(F); flex = np.zeros(F)
     for i in range(F):
         p = xyz[i]
         up, across, facing = _torso_frame(p)
-
-        # --- torso signals (relative to the world) ---
-        lean_fwd = float(up @ Z_AXIS)                       # bow toward camera +, arch -
-        side_bend = float(up @ X_AXIS)                      # spine tilts along image-x +
-        # twist = how far the shoulder line rotates OUT of the image plane (depth).
-        # ~0 when frontal (shoulders across the image), grows as she turns.
-        twist = float(np.arcsin(np.clip(across @ Z_AXIS, -1.0, 1.0)))
-
-        # --- arm as SIGNED frontal-plane angle RELATIVE TO THE TORSO, so it
-        # composes with the base lean (the base folds like her torso, the arm
-        # rides on top). 0 = along the spine, +pi/2 = out across, +-pi = down. ---
+        side_bend[i] = up @ X_AXIS                          # spine tilts along image-x
+        # twist = how far the shoulder line rotates OUT of the image plane (~0 frontal)
+        twist[i] = np.arcsin(np.clip(across @ Z_AXIS, -1.0, 1.0))
+        sagittal[i] = np.arctan2(up @ Z_AXIS, up @ WORLD_UP)  # torso fold (sagittal)
+        # arm frontal-plane angle RELATIVE to torso (0 = along spine, +-pi = down)
         upper = p[el_i] - p[sh_i]
         fore = p[wr_i] - p[el_i]
-        upper_ang = _frontal(upper, across, up)
-        fore_ang = _frontal(fore, across, up)
-        flex = _angle(upper, fore)                          # elbow: 0 straight .. pi folded
+        upper_ang[i] = _frontal(upper, across, up)
+        flex[i] = _angle(upper, fore)                       # elbow: 0 straight .. pi folded
 
-        # torso forward/back fold (spine tilt in the sagittal/depth plane)
-        sagittal = float(np.arctan2(up @ Z_AXIS, up @ WORLD_UP))
-        q[i, 0] = g["a1_twist"] * twist       # base yaw   <- torso twist
-        q[i, 1] = g["a2_fold"] * sagittal     # base fold  <- torso bow (the lean)
-        q[i, 2] = g["a3_bend"] * side_bend    # base roll  <- torso side-lean
-        q[i, 3] = g["a4_gain"] * upper_ang    # shoulder   <- arm lift rel. torso
-        q[i, 5] = g["a6_gain"] * flex         # elbow      <- her elbow flexion
+    # Unwrap the atan2-based angles over TIME so a limb sweeping through the
+    # +-pi boundary doesn't snap 360deg (the "smooth then jump" artifact).
+    upper_ang = np.unwrap(upper_ang)
+    sagittal = np.unwrap(sagittal)
 
+    q = np.zeros((F, 7))
+    q[:, 0] = g["a1_twist"] * twist       # base yaw   <- torso twist
+    q[:, 1] = g["a2_fold"] * sagittal     # base fold  <- torso bow (the lean)
+    q[:, 2] = g["a3_bend"] * side_bend    # base roll  <- torso side-lean
+    q[:, 3] = g["a4_gain"] * upper_ang    # shoulder   <- arm lift rel. torso
+    q[:, 5] = g["a6_gain"] * flex         # elbow      <- her elbow flexion
     return np.clip(q, -IIWA_LIMITS, IIWA_LIMITS)

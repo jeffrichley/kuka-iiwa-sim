@@ -105,8 +105,17 @@ def main():
     sim.reset()
     cam.initialize()
 
+    # Stream frames straight to disk as they're captured -> no 2 GB buffer and
+    # no big blocking encode at the end (that end-phase was getting killed).
+    import imageio.v2 as imageio
+    import subprocess, imageio_ffmpeg
+    from kuka_sim.dance.recorder import build_ffmpeg_cmd
+
+    out_fps = int(round(sim_fps / cap))
+    base = args.out + ".base.mp4"
+    writer = imageio.get_writer(base, fps=out_fps, macro_block_size=None)
     dev = arm_r.device
-    frames = []
+    n_cap = 0
     for i in range(n):
         arm_r.set_joint_position_target(torch.tensor(qr[i], dtype=torch.float32, device=dev).unsqueeze(0))
         arm_l.set_joint_position_target(torch.tensor(ql[i], dtype=torch.float32, device=dev).unsqueeze(0))
@@ -115,11 +124,21 @@ def main():
         arm_r.update(1.0 / sim_fps); arm_l.update(1.0 / sim_fps)
         if i % cap == 0:
             cam.update()
-            frames.append(cam.capture())
+            writer.append_data(cam.capture())
+            n_cap += 1
+            if n_cap % 200 == 0:
+                print(f"[render] {n_cap} frames written", flush=True)
+    writer.close()
 
-    print(f"[render] captured {len(frames)} frames; encoding", flush=True)
-    record(frames, args.out, fps=int(round(sim_fps / cap)),
-           audio_path=args.clip, pip_video_path=args.clip)
+    print(f"[render] {n_cap} frames on disk; muxing audio + PiP", flush=True)
+    ff = imageio_ffmpeg.get_ffmpeg_exe()
+    cmd = build_ffmpeg_cmd(ff, base, args.out, audio_path=args.clip,
+                           pip_video_path=args.clip, base_h=540)
+    if cmd is not None:
+        subprocess.run(cmd, check=True, capture_output=True)
+        os.remove(base)
+    else:
+        os.replace(base, args.out)
     print(f"[OK] wrote {args.out}", flush=True)
 
     import sys, threading

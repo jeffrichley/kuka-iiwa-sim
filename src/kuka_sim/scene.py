@@ -21,7 +21,9 @@ def _add_flange_probe(prim_path, length=0.16, radius=0.012, mount=0.10):
     probe.func(prim_path, probe, translation=(0.0, 0.0, mount))
 
 
-def build_scene(sim, usd_path, surface_kwargs=None, with_probe=True):
+def build_scene(sim, usd_path, surface_kwargs=None, with_probe=True, with_surface=True):
+    """Ground + light + arm, plus (optionally) the force-demo workpiece and flange
+    probe. Dance scenes pass with_probe=False, with_surface=False for a bare arm."""
     import isaaclab.sim as sim_utils
 
     # ground + dome light — documented standalone spawn idiom: cfg.func(path, cfg)
@@ -30,9 +32,9 @@ def build_scene(sim, usd_path, surface_kwargs=None, with_probe=True):
     light_cfg = sim_utils.DomeLightCfg(intensity=2500.0, color=(0.75, 0.75, 0.75))
     light_cfg.func("/World/light", light_cfg)
 
-    surface = make_surface(prim_path=SURFACE_PRIM, **(surface_kwargs or {}))
-    arm = IiwaArm(usd_path=usd_path, prim_path=ROBOT_PRIM,
-                  ee_body=EE_BODY, surface_prim=SURFACE_PRIM)
+    surface = make_surface(prim_path=SURFACE_PRIM, **(surface_kwargs or {})) if with_surface else None
+    arm = IiwaArm(usd_path=usd_path, prim_path=ROBOT_PRIM, ee_body=EE_BODY,
+                  surface_prim=(SURFACE_PRIM if with_surface else None))
     if with_probe:
         _add_flange_probe(f"{ROBOT_PRIM}/{EE_BODY}/probe")
     return {"arm": arm, "surface": surface}

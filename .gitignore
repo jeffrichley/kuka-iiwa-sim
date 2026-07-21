@@ -2,6 +2,8 @@
 # assets/urdf: fetched description + expand_xacro.py output (see docs/assets.md)
 # assets/usd: generated from URDF by setup/import_iiwa.py
 # out: rendered videos and frame captures
+assets/audio/
+assets/video/
 assets/urdf/
 assets/usd/
 out/
@@ -33,3 +35,6 @@ logs/
 *.swp
 Thumbs.db
 .DS_Store
+.pose_venv/
+.preview_venv/
+assets/photos/

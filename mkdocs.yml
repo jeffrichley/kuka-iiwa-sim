@@ -62,3 +62,4 @@ nav:
       - Control API: api.md
       - Write an experiment: writing-experiments.md
   - How it works: how-it-works.md
+  - The dance module: dance.md

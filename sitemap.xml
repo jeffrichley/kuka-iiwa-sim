@@ -2,30 +2,34 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://jeffrichley.github.io/kuka-iiwa-sim/</loc>
-         <lastmod>2026-07-18</lastmod>
+         <lastmod>2026-07-21</lastmod>
     </url>
     <url>
          <loc>https://jeffrichley.github.io/kuka-iiwa-sim/api/</loc>
-         <lastmod>2026-07-18</lastmod>
+         <lastmod>2026-07-21</lastmod>
     </url>
     <url>
          <loc>https://jeffrichley.github.io/kuka-iiwa-sim/build-asset/</loc>
-         <lastmod>2026-07-18</lastmod>
+         <lastmod>2026-07-21</lastmod>
+    </url>
+    <url>
+         <loc>https://jeffrichley.github.io/kuka-iiwa-sim/dance/</loc>
+         <lastmod>2026-07-21</lastmod>
     </url>
     <url>
          <loc>https://jeffrichley.github.io/kuka-iiwa-sim/how-it-works/</loc>
-         <lastmod>2026-07-18</lastmod>
+         <lastmod>2026-07-21</lastmod>
     </url>
     <url>
          <loc>https://jeffrichley.github.io/kuka-iiwa-sim/install/</loc>
-         <lastmod>2026-07-18</lastmod>
+         <lastmod>2026-07-21</lastmod>
     </url>
     <url>
          <loc>https://jeffrichley.github.io/kuka-iiwa-sim/running-demos/</loc>
-         <lastmod>2026-07-18</lastmod>
+         <lastmod>2026-07-21</lastmod>
     </url>
     <url>
          <loc>https://jeffrichley.github.io/kuka-iiwa-sim/writing-experiments/</loc>
-         <lastmod>2026-07-18</lastmod>
+         <lastmod>2026-07-21</lastmod>
     </url>
 </urlset>

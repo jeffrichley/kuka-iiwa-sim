@@ -10,13 +10,11 @@
       
       
       
-        <link rel="canonical" href="https://jeffrichley.github.io/kuka-iiwa-sim/writing-experiments/">
+        <link rel="canonical" href="https://jeffrichley.github.io/kuka-iiwa-sim/dance/">
       
       
-        <link rel="prev" href="../api/">
+        <link rel="prev" href="../how-it-works/">
       
-      
-        <link rel="next" href="../how-it-works/">
       
       
         
@@ -27,7 +25,7 @@
     
     
       
-        <title>Write an experiment - KUKA iiwa 7 R800 — Simulated Digital Twin</title>
+        <title>The dance module - KUKA iiwa 7 R800 — Simulated Digital Twin</title>
       
     
     
@@ -78,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#write-an-experiment" class="md-skip">
+        <a href="#the-dance-module" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Write an experiment
+              The dance module
             
           </span>
         </div>
@@ -399,8 +397,6 @@
       
   
   
-    
-  
   
   
     
@@ -413,11 +409,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
@@ -438,7 +434,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -509,37 +505,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Write an experiment
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../writing-experiments/" class="md-nav__link">
         
   
   
@@ -555,59 +524,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#the-shape-of-an-experiment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The shape of an experiment
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-things-youll-want" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common things you'll want
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#tips" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tips
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -651,10 +567,37 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../dance/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    The dance module
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -670,6 +613,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#evolution-of-dance-two-kukas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evolution of Dance — two KUKAs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#three-ways-to-drive-the-arm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three ways to drive the arm
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-mimic-pipeline-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The mimic pipeline (V2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iterate-without-isaac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Iterate without Isaac
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-well-does-it-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How well does it track?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-it-lives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where it lives
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -701,10 +730,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#the-shape-of-an-experiment" class="md-nav__link">
+  <a href="#evolution-of-dance-two-kukas" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The shape of an experiment
+        Evolution of Dance — two KUKAs
       
     </span>
   </a>
@@ -712,10 +741,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-things-youll-want" class="md-nav__link">
+  <a href="#three-ways-to-drive-the-arm" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common things you'll want
+        Three ways to drive the arm
       
     </span>
   </a>
@@ -723,10 +752,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tips" class="md-nav__link">
+  <a href="#the-mimic-pipeline-v2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tips
+        The mimic pipeline (V2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#iterate-without-isaac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Iterate without Isaac
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-well-does-it-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How well does it track?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-it-lives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where it lives
       
     </span>
   </a>
@@ -753,59 +815,123 @@
   
 
 
-<h1 id="write-an-experiment">Write an experiment<a class="headerlink" href="#write-an-experiment" title="Permanent link">&para;</a></h1>
-<p>Start from the template and put your logic in one function.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">copy </span><span class="n">experiments</span><span class="p">\</span><span class="n">bhodi_template</span><span class="p">.</span><span class="n">py</span> <span class="n">experiments</span><span class="p">\</span><span class="n">my_experiment</span><span class="p">.</span><span class="n">py</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">python</span> <span class="n">experiments</span><span class="p">\</span><span class="n">my_experiment</span><span class="p">.</span><span class="n">py</span>
+<h1 id="the-dance-module">The dance module<a class="headerlink" href="#the-dance-module" title="Permanent link">&para;</a></h1>
+<p>A bonus on top of the force-control twin: make the arm <strong>dance</strong>. It grew into a
+full motion pipeline that retargets a human dancer onto the KUKA, joint for
+joint, and renders two arms performing a real routine.</p>
+<h2 id="evolution-of-dance-two-kukas">Evolution of Dance — two KUKAs<a class="headerlink" href="#evolution-of-dance-two-kukas" title="Permanent link">&para;</a></h2>
+<p>Two iiwa arms perform the entire six-minute <em>Evolution of Dance</em>, every move
+retargeted from the original dancer onto the arms in 3D:</p>
+<div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; border-radius: 8px;">
+  <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+    src="https://www.youtube.com/embed/NMuR0vQ6Eag"
+    title="Two KUKA iiwa arms dance the Evolution of Dance"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen></iframe>
+</div>
+
+<p>10,805 simulation frames, start to finish — the whole routine, no cuts, with the
+source clip inset for comparison.</p>
+<h2 id="three-ways-to-drive-the-arm">Three ways to drive the arm<a class="headerlink" href="#three-ways-to-drive-the-arm" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Input</th>
+<th>Script</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Backend</strong></td>
+<td>a canned joint trajectory</td>
+<td><code>dance_backend_demo.py</code></td>
+</tr>
+<tr>
+<td><strong>Music (V1)</strong></td>
+<td>a song → beat-synced choreography</td>
+<td><code>dance_music_demo.py</code></td>
+</tr>
+<tr>
+<td><strong>Video mimic (V2)</strong></td>
+<td>a dance video → the arm mimics the dancer</td>
+<td>the mimic pipeline below</td>
+</tr>
+</tbody>
+</table>
+<p>The backend (<code>kuka_sim.dance</code>) is the shared spine: <code>trajectory</code> builds and
+joint-limits a motion, <code>player</code> streams targets into the sim, <code>recorder</code> films it
+and muxes audio + an optional picture-in-picture clip.</p>
+<h2 id="the-mimic-pipeline-v2">The mimic pipeline (V2)<a class="headerlink" href="#the-mimic-pipeline-v2" title="Permanent link">&para;</a></h2>
+<p>This is the flagship. A human dancer is mapped onto the <strong>entire arm</strong> — torso,
+shoulder, elbow, wrist, hand — in full 3D, so the robot follows her limbs in
+depth, not just side to side.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>video ──▶ extract_pose ──▶ gen_mimic_traj ──▶ isaac_dance_render ──▶ mp4
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>         (.pose_venv)      (.preview_venv)     (env_isaaclab)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>          MediaPipe          retarget → IK        two KUKAs
 </code></pre></div>
-<h2 id="the-shape-of-an-experiment">The shape of an experiment<a class="headerlink" href="#the-shape-of-an-experiment" title="Permanent link">&para;</a></h2>
-<p><code>experiments/bhodi_template.py</code> owns the sim lifecycle and calls <strong>your</strong>
-<code>experiment_step(i, arm, ctrl)</code> once per tick (120 Hz). You command the arm and
-read its state there:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">experiment_step</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">arm</span><span class="p">,</span> <span class="n">ctrl</span><span class="p">):</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="c1"># Aim the flange probe forward (+90 deg about Y) and press its tip into</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="c1"># the workpiece block; the x press depth (0.42) sets the force (~30 N).</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="n">forward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.7071</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.7071</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="n">ctrl</span><span class="o">.</span><span class="n">set_target_pose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.42</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.62</span><span class="p">]),</span> <span class="n">forward</span><span class="p">)</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">ctrl</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>                       <span class="c1"># (1) compute + send torques</span>
+<ol>
+<li><strong>Pose</strong> — MediaPipe extracts 33 3D body landmarks per frame. This runs in
+   an <strong>isolated <code>.pose_venv</code></strong> (MediaPipe pulls opencv-contrib, which would
+   clobber Isaac's <code>cv2</code>) and hands off a plain <code>.npz</code>.</li>
+<li><strong>Retarget + bake</strong> — for each frame, a bounded least-squares solve finds the
+   7 joint angles that best align the arm's real link directions (from URDF
+   forward kinematics) with the dancer's limb directions. Both a <strong>right</strong> and a
+   <strong>left</strong> arm are solved, smoothed, and resampled to the sim rate. Runs in
+   <code>.preview_venv</code> (ikpy + scipy).</li>
+<li><strong>Render</strong> — two position-controlled KUKAs on a spotlit stage play the baked
+   trajectory; the source clip is inset and its audio muxed in.</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c"># 1) pose  (isolated pose venv)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p">.</span><span class="n">pose_venv</span><span class="p">/</span><span class="n">Scripts</span><span class="p">/</span><span class="n">python</span><span class="p">.</span><span class="n">exe</span> <span class="n">scripts</span><span class="p">/</span><span class="n">extract_pose</span><span class="p">.</span><span class="n">py</span> <span class="p">`</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="p">-</span><span class="n">-video</span> <span class="n">assets</span><span class="p">/</span><span class="n">video</span><span class="p">/</span><span class="n">dance</span><span class="p">.</span><span class="n">mp4</span> <span class="p">-</span><span class="n">-out</span> <span class="n">out</span><span class="p">/</span><span class="n">dance_poses</span><span class="p">.</span><span class="n">npz</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c"># 2) bake the two-arm joint trajectory  (preview venv)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">.</span><span class="n">preview_venv</span><span class="p">/</span><span class="n">Scripts</span><span class="p">/</span><span class="n">python</span><span class="p">.</span><span class="n">exe</span> <span class="n">scripts</span><span class="p">/</span><span class="n">gen_mimic_traj</span><span class="p">.</span><span class="n">py</span> <span class="p">`</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="p">-</span><span class="n">-poses</span> <span class="n">out</span><span class="p">/</span><span class="n">dance_poses</span><span class="p">.</span><span class="n">npz</span> <span class="p">-</span><span class="n">-start</span> <span class="n">20</span> <span class="p">-</span><span class="n">-seconds</span> <span class="n">40</span> <span class="p">`</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="p">-</span><span class="n">-sim-fps</span> <span class="n">60</span> <span class="p">-</span><span class="n">-out</span> <span class="n">out</span><span class="p">/</span><span class="n">dance_traj</span><span class="p">.</span><span class="n">npz</span>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">250</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>                   <span class="c1"># (2) read what happened</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="n">f</span> <span class="o">=</span> <span class="n">arm</span><span class="o">.</span><span class="n">get_ee_force</span><span class="p">()</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;step </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: |F| = </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> N&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c"># 3) beauty render  (Isaac venv)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">env_isaaclab</span><span class="p">/</span><span class="n">Scripts</span><span class="p">/</span><span class="n">python</span><span class="p">.</span><span class="n">exe</span> <span class="n">scripts</span><span class="p">/</span><span class="n">isaac_dance_render</span><span class="p">.</span><span class="n">py</span> <span class="p">`</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="p">-</span><span class="n">-traj</span> <span class="n">out</span><span class="p">/</span><span class="n">dance_traj</span><span class="p">.</span><span class="n">npz</span> <span class="p">-</span><span class="n">-clip</span> <span class="n">out</span><span class="p">/</span><span class="n">dance_clip</span><span class="p">.</span><span class="n">mp4</span> <span class="p">`</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="p">-</span><span class="n">-out</span> <span class="n">out</span><span class="p">/</span><span class="n">isaac_dance</span><span class="p">.</span><span class="n">mp4</span>
 </code></pre></div>
-<p>The driver wraps each call with <code>arm.write() → sim.step() → arm.update()</code>, so you
-never touch the sim loop.</p>
-<h2 id="common-things-youll-want">Common things you'll want<a class="headerlink" href="#common-things-youll-want" title="Permanent link">&para;</a></h2>
-<p><strong>Hold a target contact force.</strong> Set the press depth from the calibration
-(<code>x=0.42 → ~30 N</code>, deeper → more). To hold a <em>different</em> force, change the x in
-<code>set_target_pose</code>, or re-run the sweep in <code>scripts/force_demo.py</code> for your block
-stiffness.</p>
-<p><strong>Change the force mid-run.</strong> Call <code>ctrl.set_target_pose(...)</code> with a new x at any
-step to ramp or step the press.</p>
-<p><strong>Move along the surface while pressing.</strong> Vary the <code>y</code> of the pose target over
-time (keep x for the press, z for height) to drag the tool across the panel.</p>
-<p><strong>Read force / position histories.</strong> Use <code>kuka_sim.logging_utils.ForceLog</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">kuka_sim.logging_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ForceLog</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">log</span> <span class="o">=</span> <span class="n">ForceLog</span><span class="p">()</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># in the loop:</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">log</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">arm</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="n">arm</span><span class="o">.</span><span class="n">get_ee_force</span><span class="p">())</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># after:</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">log</span><span class="o">.</span><span class="n">save_plot</span><span class="p">(</span><span class="s2">&quot;out/my_force.png&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+<div class="admonition warning">
+<p class="admonition-title">Three isolated venvs — on purpose</p>
+<p>MediaPipe and the preview stack both pin <code>numpy &lt; 2</code>, but Isaac is compiled
+against the <strong>numpy 1.26 ABI</strong> and crashes on numpy 2. Keeping pose,
+preview, and Isaac in separate venvs — handing plain <code>.npz</code> files between
+them — is what keeps all three from clobbering each other.</p>
+</div>
+<h2 id="iterate-without-isaac">Iterate without Isaac<a class="headerlink" href="#iterate-without-isaac" title="Permanent link">&para;</a></h2>
+<p>A full Isaac beauty render is slow. <code>preview_trajectory.py</code> renders the arm as a
+dots-and-lines stick figure in <strong>matplotlib 3D</strong> in seconds, so choreography,
+amplitude, camera, and the mimic mapping can be tuned fast — then the final
+beauty pass runs in Isaac once.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">.</span><span class="n">preview_venv</span><span class="p">/</span><span class="n">Scripts</span><span class="p">/</span><span class="n">python</span><span class="p">.</span><span class="n">exe</span> <span class="n">scripts</span><span class="p">/</span><span class="n">preview_trajectory</span><span class="p">.</span><span class="n">py</span> <span class="p">`</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="p">-</span><span class="n">-mode</span> <span class="n">mimic</span> <span class="p">-</span><span class="n">-poses</span> <span class="n">out</span><span class="p">/</span><span class="n">dance_poses</span><span class="p">.</span><span class="n">npz</span> <span class="p">-</span><span class="n">-side</span> <span class="n">both</span> <span class="p">`</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="p">-</span><span class="n">-seconds</span> <span class="n">20</span> <span class="p">-</span><span class="n">-out</span> <span class="n">out</span><span class="p">/</span><span class="n">preview_mimic</span><span class="p">.</span><span class="n">mp4</span>
 </code></pre></div>
-<p><strong>Record a video.</strong> Copy the camera + frame-capture pattern from
-<code>scripts/record_demo.py</code>.</p>
-<h2 id="tips">Tips<a class="headerlink" href="#tips" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Keep the press in the arm's <strong>dexterous zone</strong> (forward, mid-height). Pressing
-  <em>down</em> at reach saturates the weak wrist — see <a href="../how-it-works/">How it works</a>.</li>
-<li>Keep pose targets <strong>reachable</strong> (e.g. <code>z≈0.62</code> here) so no axis saturates and
-  destabilizes contact.</li>
-<li>Aim the flange forward (<code>[0.7071, 0, 0.7071, 0]</code>) so the <strong>probe tip</strong> presses,
-  not the side of the wrist.</li>
-<li>End your script with <code>app.close(); os._exit(0)</code> to avoid Isaac's shutdown hang.</li>
-</ul>
+<p>The stick figure draws the robot's <strong>real</strong> joint positions (IK from the URDF),
+color-coded so each robot link matches the human segment it tracks. It
+approximates the motion, not the physics (Isaac adds impedance lag).</p>
+<h2 id="how-well-does-it-track">How well does it track?<a class="headerlink" href="#how-well-does-it-track" title="Permanent link">&para;</a></h2>
+<p><code>joint_distance_analysis.py</code> measures, per frame, how far each robot joint lands
+from the dancer's — anchored at the shoulder and normalized by upper-arm length —
+and writes a distance-over-time plot plus a 3D overlay. Moving from a
+side-to-side mapping to the full-3D solve cut mean tracking error from ~1.5 to
+~0.5 upper-arm lengths.</p>
+<h2 id="where-it-lives">Where it lives<a class="headerlink" href="#where-it-lives" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>src/kuka_sim/dance/
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  trajectory.py  player.py  recorder.py     backend spine
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  music/         features, moves, choreographer   (V1)
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  video/         pose, retarget, mimic, saliency   (V2)
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>scripts/
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>  dance_backend_demo.py  dance_music_demo.py       demos
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  extract_pose.py  gen_mimic_traj.py  isaac_dance_render.py   mimic pipeline
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>  preview_trajectory.py  joint_distance_analysis.py           iterate + measure
+</code></pre></div>
 
 
 

@@ -31,6 +31,12 @@ Reproduce it with `python scripts/record_demo.py` (see [Run the demos](running-d
       (tunable by press depth).
     - The whole run renders to an MP4 with a force-vs-time plot.
 
+!!! tip "Bonus: it dances"
+    The same twin also **mimics a human dancer**, joint for joint, in full 3D.
+    Two arms perform the entire *Evolution of Dance* —
+    [watch it](https://youtu.be/NMuR0vQ6Eag) and see
+    [The dance module](dance.md).
+
 ## Quick map
 
 | You want to… | Go to |
@@ -41,6 +47,7 @@ Reproduce it with `python scripts/record_demo.py` (see [Run the demos](running-d
 | Drive the arm from your own code | [Control API](api.md) |
 | Write your own force experiment | [Write an experiment](writing-experiments.md) |
 | Understand the control + design choices | [How it works](how-it-works.md) |
+| Make the arm **dance** (mimic a real dancer) | [The dance module](dance.md) |
 
 ## The stack
 
